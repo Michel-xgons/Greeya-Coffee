@@ -31,7 +31,9 @@
             <div class="col">
                 <div class="card card-menu shadow-sm h-100">
                     <div class="position-relative" style="border-radius:0.375rem 0.375rem 0 0; aspect-ratio:1/1;">
+                        <a href="{{ route('detail.menu') }}">
                         <img src="{{ asset('images/ice_tea.jpg') }}" class="w-100 h-100" style="object-fit:cover;" alt="...">
+                        </a>
                     </div>
                     <div class="card-body text-center p-3"
                         data-name="Ice Tea"
@@ -40,6 +42,7 @@
                             Ice Tea
                         </div>
                         <div class="mb-2 fw-bold">Rp8.000</div>
+
         {{-- Tambahkan tombol keranjang --}}
                         <div class="d-flex justify-content-end mb-4 mt-2">
                             <button class="btn btn-outline-dark btn-sm w-100 rounded-pill add-to-cart" type="button">Tambah ke Keranjang</button>
