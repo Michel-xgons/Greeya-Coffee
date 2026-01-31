@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('jumlah');
             $table->integer('harga');
             $table->integer('subtotal');
+            $table->timestamps();
 });
 
     }
