@@ -80,7 +80,7 @@
     </main>
 
     {{-- Footer --}}
-    
+
 
     <!-- Script -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -109,7 +109,10 @@
                     }
                 });
 
-                return { totalItems, totalHarga };
+                return {
+                    totalItems,
+                    totalHarga
+                };
             }
 
             function updateCartDisplay() {
@@ -178,8 +181,11 @@
                         items.push({
                             name: card.dataset.name,
                             price: parseInt(card.dataset.price, 10),
-                            qty
+                            qty,
+                            note: card.dataset.note || '',
+                            variant: card.dataset.variant || ''
                         });
+
                     }
                 });
 
@@ -213,10 +219,10 @@
 
             updateCartDisplay();
         });
-        </script>
+    </script>
 
 
-@yield('scripts')
+    @yield('scripts')
 </body>
 
 </html>
