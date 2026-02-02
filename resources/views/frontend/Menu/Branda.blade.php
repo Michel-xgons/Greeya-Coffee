@@ -38,7 +38,9 @@
                                 alt="...">
                         </a>
                     </div>
-                    <div class="card-body text-center p-3" data-name="Ice Tea" data-price="8000" data-qty="0">
+
+                    <div class="card-body text-center p-3" data-name="{{ $item->nama_menu }}"
+                        data-price="{{ $item->harga }}" data-qty="{{ $item->jumlah }}">
                         <div class="fw-semibold mb-1">
                             {{ $item->nama_menu }}
                         </div>
