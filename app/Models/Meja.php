@@ -5,18 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Payment extends Model
+class Meja extends Model
 {
     use HasFactory;
 
-    protected $table = 'pembayaran';
-    protected $primaryKey = 'id_pembayaran';
+    protected $table = 'meja'; // ⬅️ INI KUNCI
+
+    protected $primaryKey = 'id_meja'; // jika PK kamu id_meja
 
     protected $fillable = [
-        'order_id',
-        'amount',
+        'nomor_meja',
+        'qr_code',
         'status',
-        'payment_type',
     ];
 }
-

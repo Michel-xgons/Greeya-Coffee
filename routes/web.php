@@ -14,7 +14,7 @@ Route:: get('/checkout',[CheckOutController::class,'index'])
 ->name ('CekOut');
 Route:: get('/pemesanan',[PemesananController::class,'index']) 
 ->name ('Pemesanan');
-Route:: get('/DetailMenu', [DetailMenuController::class, 'index'])
+Route:: get('/DetailMenu/{id}', [BrandaController::class, 'show'])
     ->name('detail.menu');
 Route::post('/pemesanan/simpan', [PemesananController::class, 'simpan'])
     ->name('pemesanan.simpan');

@@ -15,8 +15,8 @@
         <div class="card-body">
 
             <!-- NAMA & HARGA -->
-            <h5 class="fw-bold mb-1">Tea</h5>
-            <div class="fw-semibold mb-3">Rp8.000</div>
+            <h5 class="fw-bold mb-1">{{ $menu->nama_menu }}</h5>
+            <div class="fw-semibold mb-3">Rp{{ number_format($menu->harga, 0, ',', '.') }}</div>
 
             <hr>
 
