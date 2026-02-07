@@ -53,7 +53,7 @@
             </div>
         </div>
         <div class="offcanvas-footer border-top p-3">
-            <button class="btn btn-primary w-100">Checkout</button>
+            <a href="{{ route('CekOut') }}" class="btn btn-primary w-100">Checkout</a>
         </div>
     </div>
     <!-- Floating Cart Bar -->
@@ -81,148 +81,10 @@
 
     {{-- Footer --}}
 
-
     <!-- Script -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            if (window.__akat_cart_initialized) return;
-            window.__akat_cart_initialized = true;
-
-            const cartBar = document.getElementById('cartBar');
-            const cartTotalEl = document.getElementById('cartTotal');
-            const checkoutCountEl = document.getElementById('checkoutCount');
-            const cartCountEl = document.getElementById('cartCount');
-
-            function computeTotalsFromDOM() {
-                const cards = document.querySelectorAll('.card-body[data-price]');
-                let totalItems = 0;
-                let totalHarga = 0;
-
-                cards.forEach(card => {
-                    const qty = parseInt(card.dataset.qty || '0', 10);
-                    const price = parseInt(card.dataset.price || '0', 10);
-                    if (qty > 0) {
-                        totalItems += qty;
-                        totalHarga += qty * price;
-                    }
-                });
-
-                return {
-                    totalItems,
-                    totalHarga
-                };
-            }
-
-            function updateCartDisplay() {
-                const totals = computeTotalsFromDOM();
-                cartCountEl.textContent = totals.totalItems || 0;
-                cartTotalEl.textContent = `Rp${(totals.totalHarga || 0).toLocaleString('id-ID')}`;
-                checkoutCountEl.textContent = totals.totalItems || 0;
-                cartBar.classList.toggle('d-none', totals.totalItems === 0);
-            }
-
-            // Event add / plus / minus
-            document.addEventListener('click', (e) => {
-                const addBtn = e.target.closest('.add-to-cart');
-                const plusBtn = e.target.closest('.plus-btn');
-                const minusBtn = e.target.closest('.minus-btn');
-
-                if (addBtn) {
-                    const card = addBtn.closest('.card-body');
-                    const control = card.querySelector('.quantity-control');
-                    const qtySpan = control.querySelector('.quantity');
-                    control.classList.remove('d-none');
-                    addBtn.classList.add('d-none');
-                    card.dataset.qty = '1';
-                    qtySpan.textContent = '1';
-                    updateCartDisplay();
-                }
-
-                if (plusBtn) {
-                    const card = plusBtn.closest('.card-body');
-                    const qtySpan = card.querySelector('.quantity');
-                    let qty = parseInt(card.dataset.qty || '0', 10);
-                    qty++;
-                    card.dataset.qty = qty;
-                    qtySpan.textContent = qty;
-                    updateCartDisplay();
-                }
-
-                if (minusBtn) {
-                    const card = minusBtn.closest('.card-body');
-                    const qtySpan = card.querySelector('.quantity');
-                    let qty = parseInt(card.dataset.qty || '0', 10);
-                    qty--;
-                    if (qty <= 0) {
-                        card.dataset.qty = '0';
-                        qtySpan.textContent = '0';
-                        card.querySelector('.quantity-control').classList.add('d-none');
-                        card.querySelector('.add-to-cart').classList.remove('d-none');
-                    } else {
-                        card.dataset.qty = qty;
-                        qtySpan.textContent = qty;
-                    }
-                    updateCartDisplay();
-                }
-            });
-
-            // Tombol checkout
-            document.getElementById('checkoutBtn')?.addEventListener('click', (e) => {
-                e.stopPropagation();
-
-                const totals = computeTotalsFromDOM();
-                const items = [];
-
-                document.querySelectorAll('.card-body[data-price]').forEach(card => {
-                    const qty = parseInt(card.dataset.qty || '0', 10);
-                    if (qty > 0) {
-                        items.push({
-                            name: card.dataset.name,
-                            price: parseInt(card.dataset.price, 10),
-                            qty,
-                            note: card.dataset.note || '',
-                            variant: card.dataset.variant || ''
-                        });
-
-                    }
-                });
-
-                localStorage.setItem('greeya_cart', JSON.stringify({
-                    items,
-                    totalHarga: totals.totalHarga,
-                    totalItems: totals.totalItems
-                }));
-
-                window.location.href = '/checkout';
-            });
-
-            // Restore dari localStorage
-            const savedData = JSON.parse(localStorage.getItem('greeya_cart') || '{}');
-            if (savedData.items && savedData.items.length > 0) {
-                savedData.items.forEach(item => {
-                    const card = Array.from(document.querySelectorAll('.card-body[data-name]'))
-                        .find(c => c.dataset.name === item.name);
-
-                    if (card) {
-                        card.dataset.qty = item.qty;
-                        const control = card.querySelector('.quantity-control');
-                        const addBtn = card.querySelector('.add-to-cart');
-                        const qtySpan = card.querySelector('.quantity');
-                        control.classList.remove('d-none');
-                        addBtn.classList.add('d-none');
-                        qtySpan.textContent = item.qty;
-                    }
-                });
-            }
-
-            updateCartDisplay();
-        });
-    </script>
-
-
-    @yield('scripts')
 </body>
 
 </html>
