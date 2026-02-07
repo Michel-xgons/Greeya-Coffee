@@ -15,7 +15,7 @@ Route::post('/cart/add', [BrandaController::class, 'cart_add'])
 
 Route::prefix('cart')->group(function () {
     Route::get('/checkout', [CheckOutController::class, 'index'])
-        ->name('CekOut');
+        ->name('chekout');
     Route::post('/update', [CheckOutController::class, 'update']);
     Route::post('/note', [CheckOutController::class, 'note']);
 });

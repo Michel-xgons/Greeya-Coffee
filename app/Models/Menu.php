@@ -11,5 +11,9 @@ class Menu extends Model
 
     protected $table = 'menu';
     protected $primaryKey = 'id_menu';
-}
 
+    public function kategori()
+    {
+        return $this->belongsTo(KategoriMenu::class, 'id_kategori');
+    }
+}
