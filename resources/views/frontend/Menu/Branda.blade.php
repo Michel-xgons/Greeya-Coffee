@@ -42,13 +42,7 @@
 
     <div class="tab-content" id="nav-tabContent">
 
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                @foreach ($errors->all() as $error)
-                    <p class="mb-0">Warning! {{ $error }}</p>
-                @endforeach
-            </div>
-        @endif
+      
 
         @foreach ($kategoris as $kategori)
             <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="nav-{{ $kategori->id_kategori }}"
