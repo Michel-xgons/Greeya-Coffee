@@ -10,8 +10,15 @@ use App\Http\Controllers\DetailMenuController;
 
 Route:: get('/',[BrandaController::class,'index']) 
 ->name ('Branda');
-Route:: get('/checkout',[CheckOutController::class,'index']) 
-->name ('CekOut');
+Route::post('/cart/add', [BrandaController::class, 'cart_add'])
+    ->name('cart.add');
+
+Route::prefix('cart')->group(function () {
+    Route::get('/checkout', [CheckOutController::class, 'index'])
+        ->name('CekOut');
+    Route::post('/update', [CheckOutController::class, 'update']);
+    Route::post('/note', [CheckOutController::class, 'note']);
+});
 Route:: get('/pemesanan',[PemesananController::class,'index']) 
 ->name ('Pemesanan');
 Route:: get('/DetailMenu/{id}', [BrandaController::class, 'show'])
