@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('menu', function (Blueprint $table) {
             $table->id('id_menu');
-            $table->foreignId('id_kategori')->constrained('kategori_menu', 'id_kategori');
+            $table->foreignId('id_kategori');
             $table->string('nama_menu');
             $table->integer('harga');
             $table->text('deskripsi')->nullable();
