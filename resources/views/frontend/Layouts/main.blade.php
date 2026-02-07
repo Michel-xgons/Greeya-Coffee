@@ -28,50 +28,74 @@
 
                 <!-- Tombol Keranjang -->
                 <div class="position-relative">
-                    <button class="btn btn-light rounded-circle p-2 shadow-sm" id="cartBtn" aria-label="Keranjang">
+                    <button class="btn btn-light rounded-circle p-2 shadow-sm" id="btnCheckout" data-bs-toggle="modal"
+                        data-bs-target="#checkoutModal">
                         <i class="fas fa-shopping-cart"></i>
                     </button>
                     <span id="cartCount"
                         class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                        0
+                        @php
+                            $cart = session('cart', []);
+
+                            $total_item = 0;
+                            foreach ($cart as $item) {
+                                $total_item += $item['qty'];
+                            }
+
+                        @endphp
+                        {{ $total_item }}
                     </span>
                 </div>
+
+                <!-- Modal Checkout -->
+                <div class="modal fade" id="checkoutModal" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+
+                            <div class="modal-header">
+                                <h5 class="modal-title">Ringkasan Pesanan</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+
+                            <div class="modal-body text-center">
+                                @php
+                                    $cart = session('cart', []);
+
+                                    $total = 0;
+                                    foreach ($cart as $item) {
+                                        $total += $item['price'] * $item['qty'];
+                                    }
+                                @endphp
+
+                                <h6>Total yang harus dibayar:</h6>
+
+                                <h3 class="fw-bold text-success my-3" id="modalTotal">
+                                    Rp {{ number_format($total, 0, ',', '.') }}
+                                </h3>
+
+                                <p class="text-muted">
+                                    Pastikan pesanan Anda sudah benar sebelum checkout
+                                </p>
+
+                            </div>
+
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+
+                                <a href="{{ route('chekout') }}" class="btn btn-primary">
+                                    Lanjut Checkout
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
 
             </div>
         </div>
     </header>
 
-    <!-- Offcanvas Keranjang -->
-    <div class="offcanvas offcanvas-end" tabindex="-1" id="cartOffcanvas" aria-labelledby="cartOffcanvasLabel">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="cartOffcanvasLabel">Keranjang Belanja</h5>
-            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body">
-            <div id="cartItems">
-                <p class="text-muted text-center">Keranjang masih kosong</p>
-            </div>
-        </div>
-        <div class="offcanvas-footer border-top p-3">
-            <a href="{{ route('CekOut') }}" class="btn btn-primary w-100">Checkout</a>
-        </div>
-    </div>
-    <!-- Floating Cart Bar -->
-    <div id="cartBar" class="d-none position-fixed bottom-0 start-0 end-0 bg-secondary text-white py-3 px-4 shadow-lg"
-        style="z-index: 1050; border-radius: 1rem 1rem 0 0;">
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-2">
-                <i class="fas fa-shopping-basket fs-4"></i>
-                <div>
-                    <div class="fw-bold">Total</div>
-                    <div id="cartTotal" class="fs-5 fw-semibold">Rp0</div>
-                </div>
-            </div>
-            <button id="checkoutBtn" class="btn btn-light fw-bold rounded-pill">
-                CHECK OUT (<span id="checkoutCount">0</span>)
-            </button>
-        </div>
-    </div>
 
 
     {{-- Konten utama tiap halaman --}}
@@ -83,7 +107,7 @@
 
     <!-- Script -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
 
 </body>
 

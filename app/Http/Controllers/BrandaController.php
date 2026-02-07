@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\KategoriMenu;
 use Illuminate\Http\Request;
 use App\Models\Menu;
 
@@ -9,45 +10,55 @@ class BrandaController extends Controller
 {
     public function index()
     {
-        $menuMakanan = Menu::where('id_kategori', 1)->get();
-        $menuMinuman = Menu::where('id_kategori', 2)->get();
-        return view('frontend.Menu.Branda', compact('menuMakanan', 'menuMinuman')); 
+        $cart = session('cart', []);
+
+        $total = 0;
+        foreach ($cart as $item) {
+            $total += $item['price'] * $item['qty'];
+        }
+
+        $kategoris = KategoriMenu::with('menus')->get();
+
+
+        return view(
+            'frontend.Menu.Branda',
+            [
+                'kategoris'      => $kategoris
+            ]
+        );
     }
 
     public function cart_add(Request $request)
-{
-    dd($request->all());    
-    $cart = session('cart', []);
+    {
 
-    $qty = (int) $request->qty;
+        $cart = session('cart', []);
 
-    $found = false;
+        $qty = (int) $request->qty;
 
-    foreach ($cart as &$item) {
-        if ($item['id'] == $request->id_menu) {
-            $item['qty'] += $qty;
-            $found = true;
-            break;
+        $found = false;
+
+        foreach ($cart as &$item) {
+            if ($item['id'] == $request->id_menu) {
+                $item['qty'] += $qty;
+                $found = true;
+                break;
+            }
         }
+
+        if (!$found) {
+            $cart[] = [
+                'id' => $request->id,
+                'name' => $request->nama,
+                'price' => $request->harga,
+                'qty' => $qty,
+            ];
+        }
+
+
+        session(['cart' => $cart]);
+
+        return redirect('/')->with('success', 'Menu added to cart!');
     }
-
-    if (!$found) {
-        $cart[] = [
-            'id' => $request->id_menu,
-            'name' => $request->nama_menu,
-            'price' => $request->harga,
-            'qty' => $qty,
-            'note' => '',
-            'variant' => ''
-        ];
-    }
-
-    dd($cart);
-    
-    session(['cart' => $cart]);
-
-    return redirect()->with('success', 'Menu added to cart!');
-}
 
 
     public function show($id)
