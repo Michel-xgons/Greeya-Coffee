@@ -10,8 +10,14 @@ class CheckOutController extends Controller
     {
         $cart = session('cart', []);
 
-        return view('frontend.Menu.checkout', compact('cart'));
+        $total = 0;
+        foreach ($cart as $item) {
+            $total += $item['price'] * $item['qty'];
+        }
+
+        return view('frontend.Menu.checkout', compact('cart', 'total'));
     }
+
 
     public function get()
     {
@@ -67,5 +73,20 @@ class CheckOutController extends Controller
         session(['cart' => $cart]);
 
         return response()->json(['success' => true]);
+    }
+    public function updateNote(Request $request, $id)
+    {
+        $cart = session()->get('cart', []);
+
+        foreach ($cart as &$item) {
+            if ($item['id'] == $id) {
+                $item['note'] = $request->note;
+                break;
+            }
+        }
+
+        session()->put('cart', $cart);
+
+        return redirect()->route('checkout');
     }
 }
