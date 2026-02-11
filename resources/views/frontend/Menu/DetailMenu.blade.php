@@ -36,18 +36,24 @@
                 <hr>
 
                 <!-- CATATAN -->
-                <div class="mb-3">
-                    <label for="exampleFormControlTextarea1" class="form-label">Catatan</label>
-                    <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
-                </div>
+                <form action="{{ route('cart.updateNote', $menu->id_menu) }}" method="POST">
+                    @csrf
 
-                <hr>
-                <!-- TAMBAH KE KERANJANG -->
-                <div class="text-end">
-                    <button type="button" class="btn btn-secondary">
-                        Tambah Pesanan
-                    </button>
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label">Catatan</label>
+                        <textarea name="note" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    @if ($from == 'checkout')
+                        <button type="submit" class="btn btn-dark">
+                            Update Pesanan
+                        </button>
+                    @else
+                        <button type="submit" class="btn btn-dark">
+                            Tambah Pesanan
+                        </button>
+                    @endif
+
 
             </div>
         </div>
