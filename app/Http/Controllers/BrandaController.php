@@ -61,9 +61,12 @@ class BrandaController extends Controller
     }
 
 
-    public function show($id)
+    public function show($id, Request $request)
     {
         $menu = Menu::findOrFail($id);
-        return view('frontend.Menu.detailmenu', compact('menu'));
+
+        $from = $request->query('from');
+
+        return view('frontend.Menu.DetailMenu', compact('menu', 'from'));
     }
 }
