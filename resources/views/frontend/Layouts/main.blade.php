@@ -82,8 +82,8 @@
                             <div class="modal-footer">
                                 <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
 
-                                <a href="{{ route('chekout') }}" class="btn btn-primary">
-                                    Lanjut Checkout
+                                <a href="{{ route('checkout') }}" class="btn btn-primary">
+                                    Checkout
                                 </a>
                             </div>
 
