@@ -6,7 +6,6 @@ use App\Http\Controllers\BrandaController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CheckOutController;
 use App\Http\Controllers\PemesananController;
-use App\Http\Controllers\DetailMenuController;
 
 Route::get('/', [BrandaController::class, 'index'])
     ->name('Branda');
@@ -18,7 +17,6 @@ Route::prefix('cart')->group(function () {
         ->name('checkout');
     Route::post('/note', [CheckOutController::class, 'note']);
 });
-
 Route::post('/cart/update', [CheckOutController::class, 'update'])
     ->name('cart.update');
 
