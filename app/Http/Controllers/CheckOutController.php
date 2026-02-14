@@ -89,4 +89,25 @@ class CheckOutController extends Controller
 
         return redirect()->route('checkout');
     }
+
+//     public function updateDetail(Request $request)
+// {
+//     $cart = session('cart', []);
+
+//     $rowId = md5($request->id_menu . '_' . $request->variant);
+
+//     foreach ($cart as &$item) {
+//         if ($item['row_id'] == $rowId) {
+//             $item['qty'] = $request->qty;
+//             $item['note'] = $request->note;
+//             break;
+//         }
+//     }
+
+//     session(['cart' => $cart]);
+
+//     return redirect()->route('checkout');
+// }
+
 }
+
