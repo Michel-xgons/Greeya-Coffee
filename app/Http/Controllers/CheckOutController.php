@@ -74,40 +74,6 @@ class CheckOutController extends Controller
 
         return response()->json(['success' => true]);
     }
-    public function updateNote(Request $request, $id)
-    {
-        $cart = session()->get('cart', []);
-
-        foreach ($cart as &$item) {
-            if ($item['id'] == $id) {
-                $item['note'] = $request->note;
-                break;
-            }
-        }
-
-        session()->put('cart', $cart);
-
-        return redirect()->route('checkout');
-    }
-
-//     public function updateDetail(Request $request)
-// {
-//     $cart = session('cart', []);
-
-//     $rowId = md5($request->id_menu . '_' . $request->variant);
-
-//     foreach ($cart as &$item) {
-//         if ($item['row_id'] == $rowId) {
-//             $item['qty'] = $request->qty;
-//             $item['note'] = $request->note;
-//             break;
-//         }
-//     }
-
-//     session(['cart' => $cart]);
-
-//     return redirect()->route('checkout');
-// }
 
 }
 
