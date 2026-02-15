@@ -15,7 +15,8 @@ Route::post('/cart/add', [BrandaController::class, 'cart_add'])
 Route::prefix('cart')->group(function () {
     Route::get('/checkout', [CheckOutController::class, 'index'])
         ->name('checkout');
-    Route::post('/note', [CheckOutController::class, 'note']);
+    Route::post('/note', [CheckOutController::class, 'note'])
+    ->name('cart.note');
 });
 Route::post('/cart/update', [CheckOutController::class, 'update'])
     ->name('cart.update');
@@ -27,7 +28,3 @@ Route::get('/DetailMenu/{id}', [BrandaController::class, 'show'])
 Route::post('/pemesanan/simpan', [PemesananController::class, 'simpan'])
     ->name('pemesanan.simpan');
 Route::post('/xendit/invoice', [PaymentController::class, 'createInvoice']);
-Route::post(
-    '/cart/{id}/update-note',
-    [CheckOutController::class, 'updateNote']
-)->name('cart.updateNote');
