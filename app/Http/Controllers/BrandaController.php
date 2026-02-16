@@ -14,7 +14,7 @@ class BrandaController extends Controller
 
         $total = 0;
         foreach ($cart as $item) {
-            $total += $item['price'] * $item['qty'];
+            $total += $item['harga'] * $item['qty'];
         }
 
         $kategoris = KategoriMenu::with('menus')->get();
@@ -29,36 +29,75 @@ class BrandaController extends Controller
     }
 
     public function cart_add(Request $request)
-    {
-        $cart = session('cart', []);
+{
+    $cart = session('cart', []);
 
-        $qty = (int) $request->qty;
+    $id      = $request->id;
+    $nama    = $request->nama;
+    $harga   = $request->harga;
+    $qty     = (int) $request->qty;
+    $variant = $request->variant ?? 'DEFAULT';
+    $note    = $request->note ?? '';
 
-        $found = false;
+    // Buat row_id unik
+    $row_id = md5($id . '-' . $variant . '-' . $note);
 
-        foreach ($cart as &$item) {
-            if ($item['id'] == $request->id_menu) {
-                $item['qty'] += $qty;
-                $found = true;
-                break;
-            }
-        }
+    if (isset($cart[$row_id])) {
 
-        if (!$found) {
-            $cart[] = [
-                'id' => $request->id_menu,
-                'name' => $request->nama,
-                'price' => $request->harga,
-                'qty' => $qty,
-                'note' => '',
-            ];
-        }
+        $cart[$row_id]['qty'] += $qty;
 
+    } else {
 
-        session(['cart' => $cart]);
-
-        return redirect('/')->with('success', 'Menu added to cart!');
+        $cart[$row_id] = [
+            'row_id' => $row_id,
+            'id'      => $id,
+            'nama'    => $nama,
+            'harga'   => $harga,
+            'qty'     => $qty,
+            'variant' => $variant,
+            'note'    => $note,
+        ];
     }
+
+    session(['cart' => $cart]);
+
+    return redirect()->back()->with('success', 'Menu added to cart!');
+}
+
+
+//cart add lama
+    // public function cart_add(Request $request)
+    // {
+    //     $cart = session('cart', []);
+        
+
+    //     $qty = (int) $request->qty;
+
+    //     $found = false;
+
+    //     foreach ($cart as &$item) {
+    //         if ($item['id'] == $request->id_menu) {
+    //             $item['qty'] += $qty;
+    //             $found = true;
+    //             break;
+    //         }
+    //     }
+
+    //     if (!$found) {
+    //         $cart[] = [
+    //             'id' => $request->id_menu,
+    //             'name' => $request->nama,
+    //             'price' => $request->harga,
+    //             'qty' => $qty,
+    //             'note' => '',
+    //         ];
+    //     }
+
+
+    //     session(['cart' => $cart]);
+
+    //     return redirect('/')->with('success', 'Menu added to cart!');
+    // }
 
 
     public function show($id, Request $request)
