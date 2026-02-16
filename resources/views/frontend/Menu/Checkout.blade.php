@@ -19,7 +19,7 @@
                                 <div class="card-body py-3">
 
                                     <div class="d-flex justify-content-between">
-                                        <h5 class="mb-1">{{ $item['name'] }}</h5>
+                                        <h5 class="mb-1">{{ $item['nama'] }}</h5>
                                         <div class="d-flex align-items-center gap-2">
                                             <button class="btn btn-sm btn-outline-dark"
                                                 onclick="updateQty('{{ $item['id'] }}', -1)">−</button>
@@ -30,11 +30,11 @@
                                     </div>
 
                                     <div class="small text-muted">
-                                        Harga: Rp{{ number_format($item['price'], 0, ',', '.') }}
+                                        Harga: Rp{{ number_format($item['harga'], 0, ',', '.') }}
                                     </div>
 
                                     <div class="fw-semibold mb-2">
-                                        Subtotal: Rp{{ number_format($item['price'] * $item['qty'], 0, ',', '.') }}
+                                        Subtotal: Rp{{ number_format($item['harga'] * $item['qty'], 0, ',', '.') }}
                                     </div>
 
                                     @if (!empty($item['note']))
