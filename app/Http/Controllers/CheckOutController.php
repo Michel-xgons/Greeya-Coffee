@@ -12,7 +12,7 @@ class CheckOutController extends Controller
 
         $total = 0;
         foreach ($cart as $item) {
-            $total += $item['price'] * $item['qty'];
+            $total += $item['harga'] * $item['qty'];
         }
 
         return view('frontend.Menu.checkout', compact('cart', 'total'));
