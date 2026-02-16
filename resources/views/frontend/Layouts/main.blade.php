@@ -63,7 +63,7 @@
 
                                     $total = 0;
                                     foreach ($cart as $item) {
-                                        $total += $item['price'] * $item['qty'];
+                                        $total += $item['harga'] * $item['qty'];
                                     }
                                 @endphp
 
