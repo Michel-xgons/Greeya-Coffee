@@ -27,11 +27,9 @@ class MenuResource extends Resource
     {
         return $form
             ->schema([
-
                 Select::make('kategori_id')
                     ->relationship('kategori', 'nama_kategori')
                     ->required(),
-
 
                 TextInput::make('nama_menu')
                     ->required()
@@ -51,7 +49,6 @@ class MenuResource extends Resource
                     ->visibility('public')
                     ->imagePreviewHeight('150')
                     ->nullable(),
-
             ]);
     }
 
