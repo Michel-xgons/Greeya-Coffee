@@ -7,7 +7,7 @@
 
         <!-- GAMBAR PRODUK -->
         <div class="card bg-secondary">
-            <img src="{{ asset('images/ice_tea.jpg') }}" class="img-fluid w-50 mx-auto d-block" alt="...">
+            <img src="{{ asset('storage/' . $menu->gambar) }}" class="img-fluid w-50 mx-auto d-block" alt="...">
         </div>
 
         <div class="card rounded-top-4 mt-n3">
@@ -17,24 +17,27 @@
                 <div class="fw-semibold mb-3">
                     Rp{{ number_format($menu->harga, 0, ',', '.') }}
                 </div>
+                <div class="fw-semibold mb-2">{{ $menu->deskripsi }}
+                </div>
 
                 <hr>
 
                 <form action="{{ route('cart.add') }}" method="POST">
                     @csrf
 
-                    <input type="hidden" name="id" value="{{ $menu->id_menu }}">
+                    <input type="hidden" name="id" value="{{ $menu->id }}">
                     <input type="hidden" name="nama" value="{{ $menu->nama_menu }}">
                     <input type="hidden" name="harga" value="{{ $menu->harga }}">
 
+
                     <!-- variant -->
                     <div class="form-check mb-3">
-                        <input class="form-check-input" type="radio" name="variant" value="HOT">
+                        <input class="form-check-input" type="radio" name="varian" value="HOT">
                         <label class="form-check-label">HOT</label>
                     </div>
 
                     <div class="form-check mb-3">
-                        <input class="form-check-input" type="radio" name="variant" value="ICE" checked>
+                        <input class="form-check-input" type="radio" name="varian" value="ICE" checked>
                         <label class="form-check-label">ICE</label>
                     </div>
 

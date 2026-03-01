@@ -2,21 +2,31 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Pesanan extends Model
 {
-    use HasFactory;
-
-    protected $table = 'pesanan';
-    protected $primaryKey = 'id_pesanan';
-
     protected $fillable = [
-        'id_meja',
+        'meja_id',
         'kode_pesanan',
         'total_harga',
-        'status_pesanan',
+        'status',
         'xendit_invoice_id',
     ];
+
+    public function meja()
+    {
+        return $this->belongsTo(Meja::class);
+    }
+
+    
+    public function pembayaran()
+    {
+        return $this->hasOne(Pembayaran::class);
+    }
+
+    public function detailPesanans()
+    {
+        return $this->hasMany(DetailPesanan::class);
+    }
 }

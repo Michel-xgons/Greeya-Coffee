@@ -8,23 +8,40 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('pesanan', function (Blueprint $table) {
-            $table->id('id_pesanan');
-            $table->foreignId('id_meja')
-                ->constrained('meja', 'id_meja')
-                ->onDelete('cascade');
+        Schema::create('pesanans', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('meja_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
+            $table->foreignId('customer_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
             $table->string('kode_pesanan')->unique();
-            $table->integer('total_harga');
-            $table->enum('status_pesanan', [
+            $table->string('external_id')->unique();
+
+            $table->bigInteger('total_harga');
+
+            $table->enum('payment_status', [
+                'pending',
+                'paid',
+                'expired'
+            ])->default('pending');
+
+            $table->enum('order_status', [
                 'menunggu',
                 'diproses',
                 'selesai',
                 'dibatalkan'
-    ])->default('menunggu');
-    $table->string('xendit_invoice_id')->nullable();
-    $table->timestamps();
-});
+            ])->default('menunggu');
 
+            $table->string('xendit_invoice_id')->nullable();
+            $table->timestamp('paid_at')->nullable();
+
+            $table->timestamps();
+        });
     }
 
     /**
@@ -32,6 +49,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pesanan');
+        Schema::dropIfExists('pesanans');
     }
 };

@@ -11,16 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('detail_pesanan', function (Blueprint $table) {
-            $table->id('id_detail');
-            $table->foreignId('id_pesanan')->constrained('pesanan', 'id_pesanan')->onDelete('cascade');
-            $table->foreignId('id_menu')->constrained('menu', 'id_menu');
+        Schema::create('detail_pesanans', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('pesanan_id')
+                ->constrained()
+                ->cascadeOnDelete();
+            $table->foreignId('menu_id')
+                ->constrained()
+                ->cascadeOnDelete();
+            
             $table->integer('jumlah');
-            $table->integer('harga');
-            $table->integer('subtotal');
+            $table->bigInteger('harga');
+            $table->bigInteger('subtotal');
             $table->timestamps();
-});
-
+        });
     }
 
     /**
@@ -28,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('detail_pesanan');
+        Schema::dropIfExists('detail_pesanans');
     }
 };

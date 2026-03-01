@@ -12,7 +12,10 @@
                         <div class="row g-0 align-items-center">
 
                             <div class="col-4">
-                                <img src="..." class="img-fluid rounded-start h-100 object-fit-cover" alt="...">
+                                @if (isset($item['gambar']))
+                                    <img src="{{ asset('storage/' . $item['gambar']) }}"
+                                        class="img-fluid rounded-start h-100 object-fit-cover" alt="...">
+                                @endif
                             </div>
 
                             <div class="col-8">
@@ -28,6 +31,8 @@
                                                 onclick="updateQty('{{ $item['id'] }}', 1)">+</button>
                                         </div>
                                     </div>
+                                    <div class="small text-muted">
+                                        Varian: {{ $item['varian'] ?? '-' }}</div>
 
                                     <div class="small text-muted">
                                         Harga: Rp{{ number_format($item['harga'], 0, ',', '.') }}
@@ -90,9 +95,12 @@
                     {{ 'Rp' . number_format($total + 170, 0, ',', '.') }}
                 </div>
             </div>
-            <button class="btn btn-dark rounded-pill px-4 fw-bold" id="payNowBtn">
-                Lanjut Pembayaran
-            </button>
+            <form action="{{ route('checkout.process') }}" method="POST">
+                @csrf
+                <button type="submit" class="btn btn-dark rounded-pill px-4 fw-bold">
+                    Lanjut Pembayaran
+                </button>
+            </form>
         </div>
     </div>
 
@@ -101,12 +109,12 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4">
                 <div class="modal-header border-0">
-                    <h5 class="modal-title fw-bold">Catatan Lainnya</h5>
+                    <h5 class="modal-title fw-bold">Catatan</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
                 <div class="modal-body">
-                    <textarea id="noteTextarea" class="form-control" rows="4" placeholder="Tambahkan catatan lain di sini"></textarea>
+                    <textarea id="noteTextarea" class="form-control" rows="4" placeholder="Tambahkan catatan untuk pesanan"></textarea>
                     <input type="hidden" id="noteItemId">
                 </div>
 

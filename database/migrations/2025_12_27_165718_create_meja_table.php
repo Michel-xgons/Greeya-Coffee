@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-    Schema::create('meja', function (Blueprint $table) {
-        $table->id('id_meja');
-        $table->string('nomor_meja')->unique();
-        $table->string('qr_code')->nullable();
-        $table->enum('status', ['kosong', 'digunakan'])->default('kosong');
-        $table->timestamps();
-});
-
+        Schema::create('mejas', function (Blueprint $table) {
+            $table->id();
+            $table->string('nomor_meja')->unique();
+            $table->string('qr_code')->nullable();
+            $table->enum('status', ['kosong', 'digunakan'])->default('kosong');
+            $table->timestamps();
+        });
     }
 
     /**
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('meja');
+        Schema::dropIfExists('mejas');
     }
 };

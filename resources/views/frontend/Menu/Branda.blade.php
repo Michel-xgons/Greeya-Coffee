@@ -17,19 +17,23 @@
         </div>
     </div>
 
+    @if(session('nomor_meja'))
     <div class="bg-warning bg-opacity-10 text-center fw-semibold rounded-4 py-2 my-3 mx-auto border border-warning-subtle"
         style="max-width: 300px;">
         <i class="fas fa-chair me-1 text-warning"></i>
-        Nomor Meja: <span class="fw-bold">JDA6</span>
+        Nomor Meja: 
+        <span class="fw-bold">{{ session('nomor_meja') }}</span>
+        {{-- <span class="fw-bold">Menyesuaikan No Meja</span> --}}
     </div>
+    @endif
 
     <nav>
         <div class="nav nav-tabs col-sm-12" id="nav-tab" role="tablist">
 
             @foreach ($kategoris as $kategori)
-                <a class="nav-link fs-6 {{ $loop->first ? 'active' : '' }}" id="nav-{{ $kategori->id_kategori }}-tab"
-                    data-bs-toggle="tab" data-bs-target="#nav-{{ $kategori->id_kategori }}" role="tab"
-                    aria-controls="nav-{{ $kategori->id_kategori }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}">
+                <a class="nav-link fs-6 {{ $loop->first ? 'active' : '' }}" id="nav-{{ $kategori->id }}-tab"
+                    data-bs-toggle="tab" data-bs-target="#nav-{{ $kategori->id }}" role="tab"
+                    aria-controls="nav-{{ $kategori->id }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}">
 
                     {{ $kategori->nama_kategori }}
 
@@ -51,8 +55,8 @@
         @endif
 
         @foreach ($kategoris as $kategori)
-            <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="nav-{{ $kategori->id_kategori }}"
-                role="tabpanel" aria-labelledby="nav-{{ $kategori->id_kategori }}-tab">
+            <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="nav-{{ $kategori->id }}" role="tabpanel"
+                aria-labelledby="nav-{{ $kategori->id }}-tab">
 
                 @if ($kategori->menus->count() > 0)
                     <div class="row mt-4">
@@ -63,10 +67,10 @@
                                 <div class="product-item">
 
                                     <figure>
-                                        <a href="{{ route('detail.menu', $item->id_menu) }}">
+                                        <a href="{{ route('detail.menu', $item->id) }}">
 
-                                            <img src="{{ asset('storage/' . $item->foto) }}"
-                                                style="width: 100%; height: 100px; object-fit:cover;" class="tab-image">
+                                            <img src="{{ asset('storage/' . $item->gambar) }}"
+                                                style="width: 100%; height: 100px; object-fit:cover;">
                                         </a>
                                     </figure>
 
@@ -79,7 +83,7 @@
                                     <form action="{{ route('cart.add') }}" method="POST">
                                         @csrf
 
-                                        <input type="hidden" name="id" value="{{ $item->id_menu }}">
+                                        <input type="hidden" name="id" value="{{ $item->id }}">
                                         <input type="hidden" name="nama" value="{{ $item->nama_menu }}">
                                         <input type="hidden" name="harga" value="{{ $item->harga }}">
 
@@ -111,9 +115,18 @@
 
                                                 <small>Max:10</small>
                                             </div>
-                                            <button type="submit" class="col-12 btn btn-outline-primary btn-sm">
-                                                Tambah
-                                            </button>
+
+                                            @if ($kategori->nama_kategori == 'Minuman')
+                                                <a href="{{ route('detail.menu', $item->id) }}"
+                                                    class="col-12 btn btn-outline-primary btn-sm">Tambah
+                                                </a>
+                                            @else
+                                                <button type="submit" class="col-12 btn btn-outline-primary btn-sm">
+                                                    Tambah
+                                                </button>
+                                            @endif
+
+
 
                                         </div>
                                     </form>
