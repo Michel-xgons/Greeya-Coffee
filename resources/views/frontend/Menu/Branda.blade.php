@@ -112,9 +112,15 @@
 
                                                 <small>Max:10</small>
                                             </div>
-                                            <button type="submit" class="col-12 btn btn-outline-primary btn-sm">
-                                                Tambah
-                                            </button>
+                                            @if ($kategori->name == 'minuman')
+                                                <a href=" ">
+
+                                                </a>
+                                            @else
+                                                <button type="submit" class="col-12 btn btn-outline-primary btn-sm">
+                                                    Tambah
+                                                </button>
+                                            @endif
 
                                         </div>
                                     </form>
@@ -201,26 +207,26 @@
                                 </div>
 
                                 {{-- CONTROL QTY --}}
-                                <div class="d-flex justify-content-center align-items-center gap-2 mb-3">
-                                    <button type="button" class="btn btn-outline-dark btn-sm qty-minus">−</button>
+    <div class="d-flex justify-content-center align-items-center gap-2 mb-3">
+        <button type="button" class="btn btn-outline-dark btn-sm qty-minus">−</button>
 
-                                    <span class="fw-bold qty-text">1</span>
+        <span class="fw-bold qty-text">1</span>
 
-                                    <button type="button" class="btn btn-outline-dark btn-sm qty-plus">+</button>
-                                </div>
+        <button type="button" class="btn btn-outline-dark btn-sm qty-plus">+</button>
+    </div>
 
-                                <button type="submit" class="btn btn-outline-dark btn-sm w-100 rounded-pill">
-                                    Tambah ke Keranjang
-                                </button>
-                            </div>
-                        </div>
-                        </form>
+    <button type="submit" class="btn btn-outline-dark btn-sm w-100 rounded-pill">
+        Tambah ke Keranjang
+    </button>
+    </div>
+    </div>
+    </form>
 
 
-                    </div>
-                </div>
-            </div>
-        @endforeach
+    </div>
+    </div>
+    </div>
+    @endforeach
     </div>
 
     {{-- menu makanan --}}
@@ -245,7 +251,8 @@
                         </div>
                         <div class="mb-2 fw-bold">Rp{{ number_format($item->harga, 0, ',', '.') }}</div>
                         <div class="d-flex justify-content-end mb-4 mt-2">
-                            <button class="btn btn-outline-dark btn-sm w-100 rounded-pill add-to-cart" type="button">Tambah
+                            <button class="btn btn-outline-dark btn-sm w-100 rounded-pill add-to-cart"
+                                type="button">Tambah
                                 ke Keranjang</button>
                         </div>
                     </div>
@@ -257,42 +264,40 @@
 @endsection
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
 
-    document.querySelectorAll('.cart-form').forEach(form => {
+        document.querySelectorAll('.cart-form').forEach(form => {
 
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
 
-            const id    = form.querySelector('[name="id_menu"]').value;
-            const name  = form.querySelector('[name="nama_menu"]').value;
-            const price = parseInt(form.querySelector('[name="harga"]').value);
-            const qty   = parseInt(form.querySelector('[name="qty"]').value || 1);
+                const id = form.querySelector('[name="id_menu"]').value;
+                const name = form.querySelector('[name="nama_menu"]').value;
+                const price = parseInt(form.querySelector('[name="harga"]').value);
+                const qty = parseInt(form.querySelector('[name="qty"]').value || 1);
 
-            fetch("{{ route('cart.add') }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document
-                        .querySelector('meta[name="csrf-token"]')
-                        .getAttribute('content')
-                },
-                body: JSON.stringify({
-                    id: id,
-                    name: name,
-                    price: price,
-                    change: qty
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                console.log('Cart updated:', data);
+                fetch("{{ route('cart.add') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document
+                                .querySelector('meta[name="csrf-token"]')
+                                .getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            id: id,
+                            name: name,
+                            price: price,
+                            change: qty
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log('Cart updated:', data);
+                    });
             });
+
         });
 
     });
-
-});
 </script>
-
-
