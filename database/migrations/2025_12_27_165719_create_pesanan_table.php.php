@@ -10,36 +10,17 @@ return new class extends Migration
     {
         Schema::create('pesanans', function (Blueprint $table) {
             $table->id();
-
             $table->foreignId('meja_id')
                 ->constrained()
                 ->cascadeOnDelete();
-
             $table->foreignId('customer_id')
                 ->constrained()
                 ->cascadeOnDelete();
-
-            $table->string('kode_pesanan')->unique();
-            $table->string('external_id')->unique();
-
-            $table->bigInteger('total_harga');
-
-            $table->enum('payment_status', [
-                'pending',
-                'paid',
-                'expired'
-            ])->default('pending');
-
-            $table->enum('order_status', [
-                'menunggu',
-                'diproses',
-                'selesai',
-                'dibatalkan'
-            ])->default('menunggu');
-
-            $table->string('xendit_invoice_id')->nullable();
-            $table->timestamp('paid_at')->nullable();
-
+            $table->string('kode_pesanan');
+            $table->dateTime('waktu_pesan');
+            $table->string('payment_status')->default('unpaid');
+            $table->text('catatan')->nullable();
+            $table->decimal('total_harga', 15, 2);
             $table->timestamps();
         });
     }

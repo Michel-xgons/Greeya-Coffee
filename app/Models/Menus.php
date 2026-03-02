@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Menu extends Model
+class Menus extends Model
 {
+    protected $table    = 'menus';
+
     protected $fillable = [
-        'kategori_id',
+        'id_kategori',
         'nama_menu',
         'harga',
         'deskripsi',
@@ -17,6 +19,6 @@ class Menu extends Model
 
     public function kategori()
     {
-        return $this->belongsTo(KategoriMenu::class, 'kategori_id');
+        return $this->belongsTo(Kategoris::class, 'kategori_id');
     }
 }

@@ -17,30 +17,13 @@ return new class extends Migration
             $table->foreignId('pesanan_id')
                 ->constrained('pesanans')
                 ->cascadeOnDelete();
-
-            $table->string('external_id')->unique(); // kirim ke Xendit
-            $table->string('kode_pembayaran')->unique();
-
-            $table->string('xendit_invoice_id')->nullable();
-            $table->string('invoice_url')->nullable();
-
-            $table->string('metode_pembayaran')->default('QRIS');
-
-            $table->bigInteger('total_bayar');
-
-            $table->enum('status_pembayaran', [
-                'pending',
-                'paid',
-                'expired',
-                'failed'
-            ])->default('pending');
-
-            $table->index('status_pembayaran');
-
-            $table->timestamp('waktu_bayar')->nullable();
-
-            $table->json('callback_payload')->nullable();
-
+            $table->string('xendit_external_id', 100)->unique();
+            $table->string('payment_type', 20)->default('qris');
+            $table->string('transaction_status', 50)->nullable();
+            $table->decimal('gross_amount', 15, 2);
+            $table->text('invoice_url')->nullable();
+            $table->dateTime('expiry_time')->nullable();
+            $table->timestamp('transaction_time')->nullable();
             $table->timestamps();
         });
     }

@@ -26,15 +26,17 @@ Route::post('/cart/update', [CheckOutController::class, 'update'])
 
 Route::get('/pemesanan', [PemesananController::class, 'index'])
     ->name('Pemesanan');
+
 Route::get('/DetailMenu/{id}', [BrandaController::class, 'show'])
     ->name('detail.menu');
+    
 Route::post('/checkout/process', [CheckOutController::class, 'process'])
     ->name('checkout.process');
 Route::post('/pemesanan/simpan', [PemesananController::class, 'simpan'])
     ->name('pemesanan.simpan');
 
 Route::post('/create-invoice', [PaymentController::class, 'createInvoice'])
-->name('invoice.create');
+    ->name('invoice.create');
 
 Route::post('/xendit/webhook', [PaymentController::class, 'webhook']);
 // Route::post('/xendit/invoice', [PaymentController::class, 'createInvoice']);

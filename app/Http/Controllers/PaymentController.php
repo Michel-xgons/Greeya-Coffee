@@ -2,38 +2,106 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
+use App\Models\Pesanan;
+use Illuminate\Support\Str;
+use App\Services\XenditService;
 use Illuminate\Http\Request;
-use App\Services\PaymentService;
+
 
 
 class PaymentController extends Controller
 {
-    protected PaymentService $paymentService;
+    protected XenditService $xendit;
 
-    public function __construct(PaymentService $paymentService)
+    public function __construct(XenditService $xendit)
     {
-    $this->paymentService = $paymentService;
+        $this->xendit = $xendit;
     }
 
     public function createInvoice(Request $request)
     {
         // dd($request);
-
-        $validated = $request->validate([
-            'customer.name' => 'required|string|max:100',
-            'customer.email' => 'required|email',
-            'customer.phone' => 'required|string',
+        
+        $request->validate([
+            'nama'          => 'required|string|max:100',
+            'email'         => 'required|email',
+            'telepon'       => 'required|string',
         ]);
 
-        $validated($validated);
-        
-        $result = $this->paymentService->createInvoice($validated);
+        session()->put('phone', $request->telepon);
 
-        return response()->json($result);
+        $meja = session('meja_id');
+
+        // Hitung total dari cart
+        $cart = session('cart', []);
+        
+
+        $totalHarga = 0;
+        $totalItem = 0;
+
+        foreach ($cart as $item) {
+            $totalHarga += $item['harga'] * $item['qty'];
+            $totalItem  += $item['qty'];
+        }
+
+        // $pesanan = Pesanan::where('no_telpon', $request->phone)->where('payment_status', 'unpaid')->first();
+
+        // if ($pesanan) {
+        //     return redirect(route('history.order'))->with('error', 'Anda sudah memiliki pesanan yang belum dibayar');
+        // }
+
+        //simpan data user
+        $customer = Customer::firstOrCreate(
+            ['no_telpon' => $request->telepon],
+            [
+                'name'  => $request->nama,
+                'email' => $request->email,
+            ]
+        );
+
+        
+        // simpan pesanan ke database
+        $pesanan = Pesanan::create([
+            'kode_pesanan'          => 'ORD-' . Str::uuid(),
+            'customer_id'           => $customer->id,
+            'meja_id'               => $meja,
+            'waktu_pesan'           => now(),
+            'payment_status'        => 'unpaid',
+            'catatan'               => 'Test pesanan',
+            'total_harga'           => $totalHarga
+        ]);
+
+        
+
+        // simpan order items
+        foreach ($cart as $item) {
+            $pesanan->detailPesanans()->create([
+                'pesanan_id'        => $pesanan->id,
+                'menu_id'           => $item['id'],
+                'varian'            => $item['variant'] ?? null,
+                'subtotal'         => $item['harga'] * $item['qty'],
+                'jumlah'            => $item['qty'],
+                'harga'             => $item['harga'],
+            ]);
+        }
+
+        // dd($pesanan->detailPesanans());
+
+        $pembayarans = (new XenditService())->createQrisTransaction($pesanan);
+
+        return redirect($pembayarans->invoice_url);
     }
 
-    public function webhook(Request $request)
+    public function success(Request $request)
     {
-        return $this->paymentService->handleWebhook($request);
+        session()->forget('cart');
+
+        return redirect(route('riwayat.pesananuser'))->with('success', 'Payment success');
+    }
+
+    public function failed(Request $request)
+    {
+        return redirect(route('history.order'))->with('error', 'Payment failed');
     }
 }

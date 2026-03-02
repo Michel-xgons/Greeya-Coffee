@@ -8,10 +8,12 @@ class Pesanan extends Model
 {
     protected $fillable = [
         'meja_id',
+        'customer_id',
         'kode_pesanan',
-        'total_harga',
-        'status',
-        'xendit_invoice_id',
+        'waktu_pesan',
+        'payment_status',
+        'catatan',
+        'total_harga',   
     ];
 
     public function meja()

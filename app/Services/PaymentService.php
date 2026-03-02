@@ -7,6 +7,7 @@ use App\Models\Pesanan;
 use App\Models\DetailPesanan;
 use App\Models\Pembayaran;
 use App\Models\Menu;
+use App\Models\Menus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Xendit\Configuration;
@@ -26,7 +27,7 @@ class PaymentService
             $itemsData = [];
 
             foreach ($data['cart']['items'] as $item) {
-                $menu = Menu::findOrFail($item['id']);
+                $menu = Menus::findOrFail($item['id']);
 
                 $itemSubtotal = $menu->harga * $item['qty'];
                 $subtotal += $itemSubtotal;

@@ -18,6 +18,8 @@ class MejaController extends Controller
             'nomor_meja' => $meja->nomor_meja,
         ]);
 
+        
+
         return redirect('/'); // arahkan ke beranda
     }
 }

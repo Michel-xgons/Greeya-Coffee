@@ -11,15 +11,14 @@ class Pembayaran extends Model
 
     protected $fillable = [
         'pesanan_id',
-        'external_id',
-        'kode_pembayaran',
-        'xendit_invoice_id',
+        'xendit_external_id',
+        'payment_type',
+        'transaction_status',
+        'gross_amount',
         'invoice_url',
-        'metode_pembayaran',
-        'total_bayar',
-        'status_pembayaran',
-        'waktu_bayar',
-        'callback_payload',
+        'expiry_time',
+        'transaction_time',
+
     ];
 
     protected $casts = [
