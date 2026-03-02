@@ -3,10 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use App\Models\Customer;
-use App\Models\Pesanan;
-use App\Models\DetailPesanan;
+
 
 class PemesananController extends Controller
 {
@@ -18,52 +15,30 @@ class PemesananController extends Controller
         return view('frontend.Menu.Pemesanan');
     }
 
-    /**
-     * Simpan data pemesan & pesanan
-     */
-    public function simpan(Request $request)
-    {
-        // 1. Validasi
-        $request->validate([
-            'nama' => 'required',
-            'email' => 'required|email',
-            'telepon' => 'required',
-            'items' => 'required|array',
-            'total' => 'required|numeric',
-        ]);
+    
+    // public function simpan(Request $request)
+    // {
+    //     $validated = $request->validate([
+    //         'nama' => "required|string|max:255",
+    //         'email' => "required|email",
+    //         'telepon' => 'required|string|max:20',
+    //     ]);
 
-        // 2. Simpan / ambil customer
-        $customer = Customer::firstOrCreate(
-            ['email' => $request->email],
-            [
-                'nama' => $request->nama,
-                'telepon' => $request->telepon,
-            ]
-        );
+    //     // Ambil meja dari session (hasil scan QR)
+    //     $mejaId = session('meja_id');
 
-        // 3. Simpan pesanan
-        $pesanan = Pesanan::create([
-            'id_pesanan' => Str::uuid(),
-            'kode_pesanan' => 'GRY-' . time(),
-            'total_harga' => $request->total,
-            'status_pesanan' => 'pending',
-        ]);
+    //     // Cegah kalau belum scan QR
+    //     if (!$mejaId) {
+    //         return redirect('/')
+    //             ->with('error', 'Silakan scan QR meja terlebih dahulu.');
+    //     }
 
-        // 4. Simpan detail pesanan
-        foreach ($request->items as $item) {
-            DetailPesanan::create([
-                'id_pesanan' => $pesanan->id_pesanan,
-                'id_menu' => $item['id_menu'] ?? null,
-                'jumlah' => $item['qty'],
-                'harga' => $item['price'],
-                'subtotal' => $item['qty'] * $item['price'],
-            ]);
-        }
+    //     // Simpan data customer ke session
+    //     session()->put('customer', $validated);
 
-        // 5. Response ke frontend
-        return response()->json([
-            'success' => true,
-            'id_pesanan' => $pesanan->id_pesanan,
-        ]);
-    }
+    //     // Simpan juga meja_id ke session (kalau mau eksplisit)
+    //     session()->put('meja_id', $mejaId);
+
+    //     return redirect()->route('checkout.process');
+    // }
 }

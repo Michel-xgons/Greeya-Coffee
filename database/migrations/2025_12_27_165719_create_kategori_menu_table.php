@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('kategori_menu', function (Blueprint $table) {
-            $table->id('id_kategori');
+        Schema::create('kategoris', function (Blueprint $table) {
+            $table->id();
             $table->string('nama_kategori');
             $table->timestamps();
-});
-
+        });
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Pesanan;
 
 class Customer extends Model
 {
@@ -15,8 +16,8 @@ class Customer extends Model
         'no_telpon',
     ];
 
-    public function orders()
+    public function pesanans()
     {
-        return $this->hasMany(pesanan::class);
+        return $this->hasMany(Pesanan::class);
     }
 }

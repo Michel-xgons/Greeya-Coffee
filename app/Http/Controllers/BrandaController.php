@@ -14,11 +14,11 @@ class BrandaController extends Controller
 
         $total = 0;
         foreach ($cart as $item) {
-            $total += $item['price'] * $item['qty'];
+            $total += $item['harga'] * $item['qty'];
         }
 
         $kategoris = KategoriMenu::with('menus')->get();
-
+        
 
         return view(
             'frontend.Menu.Branda',
@@ -29,41 +29,52 @@ class BrandaController extends Controller
     }
 
     public function cart_add(Request $request)
-    {
+{
+    $menu = Menu::findOrFail($request->id);
 
-        $cart = session('cart', []);
+    $cart = session('cart', []);
+    
+    $qty     = (int) $request->qty;
+    $varian = $request->varian;
+    $note    = $request->note ?? '';
 
-        $qty = (int) $request->qty;
+    // $id      = $request->id;
+    // $nama    = $request->nama;
+    // $harga   = $request->harga;
+    
 
-        $found = false;
+    // Buat row_id unik
+    $row_id = md5($menu->id . '-' . $varian . '-' . $note);
 
-        foreach ($cart as &$item) {
-            if ($item['id'] == $request->id_menu) {
-                $item['qty'] += $qty;
-                $found = true;
-                break;
-            }
-        }
+    if (isset($cart[$row_id])) {
 
-        if (!$found) {
-            $cart[] = [
-                'id' => $request->id,
-                'name' => $request->nama,
-                'price' => $request->harga,
-                'qty' => $qty,
-            ];
-        }
+        $cart[$row_id]['qty'] += $qty;
 
+    } else {
 
-        session(['cart' => $cart]);
-
-        return redirect('/')->with('success', 'Menu added to cart!');
+        $cart[$row_id] = [
+            'row_id' => $row_id,
+            'id'      => $menu->id,
+            'nama'    => $menu->nama,
+            'harga'   => $menu->harga,
+            'gambar'  => $menu->gambar,
+            'qty'     => $qty,
+            'varian' => $varian,
+            'note'    => $note,
+        ];
     }
 
+    session(['cart' => $cart]);
 
-    public function show($id)
+    return redirect()->back()->with('success', 'Menu added to cart!');
+}
+
+    public function show($id, Request $request)
     {
         $menu = Menu::findOrFail($id);
-        return view('frontend.Menu.detailmenu', compact('menu'));
+
+        $from = $request->query('from');
+
+        return view('frontend.Menu.DetailMenu', compact('menu', 'from'));
     }
 }

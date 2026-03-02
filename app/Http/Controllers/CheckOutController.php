@@ -9,9 +9,14 @@ class CheckOutController extends Controller
     public function index()
     {
         $cart = session('cart', []);
+        $total = 0;
+        foreach ($cart as $item) {
+            $total += $item['harga'] * $item['qty'];
+        }
 
-        return view('frontend.Menu.checkout', compact('cart'));
+        return view('frontend.Menu.checkout', compact('cart', 'total'));
     }
+
 
     public function get()
     {
@@ -68,4 +73,24 @@ class CheckOutController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    public function process()
+{
+    $cart = session('cart', []);
+
+    // Cek cart kosong
+    if (empty($cart)) {
+        return redirect()
+            ->route('Branda')
+            ->with('error', 'Keranjang kosong, silakan pilih pesanan.');
+    }
+
+    // Cek customer sudah isi atau belum
+    if (!session()->has('customer')) {
+        return redirect()->route('Pemesanan');
+    }
+
+    // Kalau sudah pernah isi
+    return redirect()->route('payment'); // nanti Xendit
+}
 }
