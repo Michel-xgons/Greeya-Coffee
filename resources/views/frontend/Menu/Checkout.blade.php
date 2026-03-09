@@ -75,12 +75,12 @@
                 </div>
                 <div class="d-flex justify-content-between">
                     <span>Biaya lainnya</span>
-                    <span id="fee">Rp{{ number_format(4000, 0, ',', '.') }}</span>
+                    <span id="fee">Rp{{ number_format(170, 0, ',', '.') }}</span>
                 </div>
                 <hr>
                 <div class="d-flex justify-content-between fw-bold">
                     <span>Total</span>
-                    <span id="grandTotal">{{ 'Rp' . number_format($total + 4000, 0, ',', '.') }}</span>
+                    <span id="grandTotal">{{ 'Rp' . number_format($total + 170, 0, ',', '.') }}</span>
                 </div>
             </div>
         </div>
@@ -92,7 +92,7 @@
             <div>
                 <div class="fw-bold">Total Pembayaran</div>
                 <div id="totalBayar" class="fs-5 text-danger fw-semibold">
-                    {{ 'Rp' . number_format($total + 4000, 0, ',', '.') }}
+                    {{ 'Rp' . number_format($total + 170, 0, ',', '.') }}
                 </div>
             </div>
             <form action="{{ route('checkout.process') }}" method="POST">
