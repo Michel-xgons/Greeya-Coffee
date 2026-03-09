@@ -13,9 +13,13 @@ class XenditService
 {
     protected $apiKey;
 
+    // public function __construct()
+    // {
+    //     $this->apiKey = config('services.xendit.api_key');
+    // }
     public function __construct()
     {
-        $this->apiKey = config('services.xendit.api_key');
+        $this->apiKey = config('services.xendit.secret_key');
     }
 
     /**
@@ -49,11 +53,12 @@ class XenditService
             $pesanan->detailPesanans->map(function ($item) {
                 return [
                     'id'        => $item->id,
-                    'price'     => $item->sub_total / $item->jumlah,
+                    'price'     => $item->harga, 
                     'quantity'  => $item->jumlah,
-                    'name'      => 'pesanan 1',
+                    'name'      => $item->menu->nama_menu ?? 'Menu',
                 ];
             })->toArray(),
+
             'fees' => [
                 [
                     'type' => 'PPN',
@@ -70,6 +75,10 @@ class XenditService
             'Content-Type' => 'application/json',
         ];
 
+        //         dd([
+        //     'env' => env('XENDIT_SECRET_KEY'),
+        //     'config' => config('services.xendit.secret_key'),
+        // ]);
         $response = Http::withBasicAuth($this->apiKey, '')
             ->withHeaders($headers)
             ->post('https://api.xendit.co/v2/invoices', $payload);

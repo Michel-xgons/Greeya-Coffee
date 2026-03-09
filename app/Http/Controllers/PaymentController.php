@@ -22,7 +22,7 @@ class PaymentController extends Controller
     public function createInvoice(Request $request)
     {
         // dd($request);
-        
+
         $request->validate([
             'nama'          => 'required|string|max:100',
             'email'         => 'required|email',
@@ -35,7 +35,7 @@ class PaymentController extends Controller
 
         // Hitung total dari cart
         $cart = session('cart', []);
-        
+
 
         $totalHarga = 0;
         $totalItem = 0;
@@ -45,11 +45,16 @@ class PaymentController extends Controller
             $totalItem  += $item['qty'];
         }
 
-        // $pesanan = Pesanan::where('no_telpon', $request->phone)->where('payment_status', 'unpaid')->first();
+        $pesanan = Pesanan::with('customer')
+            ->whereHas('customer', function ($query) use ($request) {
+                $query->where('no_telpon', $request->telepon);
+            })
+            ->where('payment_status', 'unpaid')
+            ->first();
 
-        // if ($pesanan) {
-        //     return redirect(route('history.order'))->with('error', 'Anda sudah memiliki pesanan yang belum dibayar');
-        // }
+        if ($pesanan) {
+            return redirect(route('riwayat.pesanan'))->with('error', 'Anda sudah memiliki pesanan yang belum dibayar');
+        }
 
         //simpan data user
         $customer = Customer::firstOrCreate(
@@ -60,7 +65,7 @@ class PaymentController extends Controller
             ]
         );
 
-        
+
         // simpan pesanan ke database
         $pesanan = Pesanan::create([
             'kode_pesanan'          => 'ORD-' . Str::uuid(),
@@ -72,7 +77,7 @@ class PaymentController extends Controller
             'total_harga'           => $totalHarga
         ]);
 
-        
+
 
         // simpan order items
         foreach ($cart as $item) {
@@ -104,4 +109,16 @@ class PaymentController extends Controller
     {
         return redirect(route('history.order'))->with('error', 'Payment failed');
     }
+    
+    public function payAgain(Pesanan $pesanan)
+{
+    if ($pesanan->payment_status === 'paid') {
+        return redirect()->back()->with('error', 'Pesanan sudah dibayar');
+    }
+
+    $pembayarans = $this->xendit->createQrisTransaction($pesanan);
+
+    return redirect($pembayarans->invoice_url);
+}
+    
 }

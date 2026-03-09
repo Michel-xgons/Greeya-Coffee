@@ -39,12 +39,6 @@ class BrandaController extends Controller
         $varian = $request->varian;
         $note    = $request->note ?? '';
 
-        // $id      = $request->id;
-        // $nama    = $request->nama;
-        // $harga   = $request->harga;
-
-
-        // Buat row_id unik
         $row_id = md5($menu->id . '-' . $varian . '-' . $note);
 
         if (isset($cart[$row_id])) {
@@ -55,7 +49,7 @@ class BrandaController extends Controller
             $cart[$row_id] = [
                 'row_id' => $row_id,
                 'id'      => $menu->id,
-                'nama'    => $menu->nama,
+                'nama'    => $menu->nama_menu,
                 'harga'   => $menu->harga,
                 'gambar'  => $menu->gambar,
                 'qty'     => $qty,
@@ -64,9 +58,40 @@ class BrandaController extends Controller
             ];
         }
 
-        session(['cart' => $cart]);
+        // session(['cart' => $cart]);
+        session()->put('cart', $cart);
 
-        return redirect()->back()->with('success', 'Menu added to cart!');
+        $total = 0;
+        $html = '';
+
+        foreach ($cart as $item) {
+
+            $subtotal = $item['harga'] * $item['qty'];
+            $total += $subtotal;
+
+            $html .= '
+        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+
+            <div class="text-start">
+                <strong>' . $item['nama'] . '</strong><br>
+                <small class="text-muted">
+                ' . $item['qty'] . ' x Rp ' . number_format($item['harga'], 0, ',', '.') . '
+                </small>
+            </div>
+
+            <div class="fw-bold">
+                Rp ' . number_format($subtotal, 0, ',', '.') . '
+            </div>
+
+        </div>';
+        }
+
+        return response()->json([
+            'success' => true,
+            'html' => $html,
+            'total' => $total,
+            'total_item' => collect($cart)->sum('qty')
+        ]);
     }
 
     public function show($id_menu, Request $request)

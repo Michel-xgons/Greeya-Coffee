@@ -3,31 +3,34 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\MenuResource\Pages;
-use BackedEnum;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\EditAction;
+use App\Models\Menus;
+use Filament\Forms\Form;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
+use Filament\Tables\Table;
 use Filament\Tables;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Table;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\DeleteAction;
 
 class MenuResource extends Resource
 {
-    protected static ?string $model = \App\Models\Menu::class;
+    protected static ?string $model = Menus::class;
+    
+    protected static ?string $navigationLabel = 'Menu';
+    protected static ?string $pluralModelLabel = 'Menu';
+    protected static ?string $modelLabel = 'Menu';
 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    public static function form(Schema $schema): Schema
+    public static function form(Form $form): Form
     {
-        return $schema
-            ->components([
+        return $form
+            ->schema([
                 Select::make('kategori_id')
                     ->relationship('kategori', 'nama_kategori')
                     ->required(),
@@ -53,12 +56,10 @@ class MenuResource extends Resource
             ]);
     }
 
-
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-
                 TextColumn::make('kategori.nama_kategori')
                     ->label('Kategori')
                     ->searchable(),
@@ -81,12 +82,9 @@ class MenuResource extends Resource
             ]);
     }
 
-
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array

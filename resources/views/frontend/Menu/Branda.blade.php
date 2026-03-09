@@ -80,7 +80,7 @@
                                         {{ 'Rp.' . number_format($item->harga) }}
                                     </h6>
 
-                                    <form action="{{ route('cart.add') }}" method="POST">
+                                    <form action="{{ route('cart.add') }}" method="POST" class="cart-form">
                                         @csrf
 
                                         <input type="hidden" name="id" value="{{ $item->id }}">
@@ -173,7 +173,7 @@
         });
     </script>
 
-    <script>
+    {{-- <script>
         document.addEventListener('DOMContentLoaded', function() {
 
             document.querySelectorAll('.cart-form').forEach(form => {
@@ -205,6 +205,54 @@
                         .then(data => {
                             console.log('Cart updated:', data);
                         });
+                });
+
+            });
+
+        });
+    </script> --}}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const toastEl = document.getElementById('cartToast');
+            const toast = new bootstrap.Toast(toastEl);
+
+            document.querySelectorAll('.cart-form').forEach(form => {
+
+                form.addEventListener('submit', function(e) {
+
+                    e.preventDefault();
+
+                    const formData = new FormData(form);
+
+                    fetch(form.action, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector(
+                                    'meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: formData
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+
+                            if (data.success) {
+
+                                toast.show();
+
+                                document.getElementById('cartCount').innerText = data
+                                .total_item;
+
+                                document.getElementById('cartItems').innerHTML = data.html;
+
+                                document.getElementById('modalTotal').innerText =
+                                    "Rp " + data.total.toLocaleString('id-ID');
+
+                            }
+
+                        });
+
                 });
 
             });

@@ -7,6 +7,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CheckOutController;
 use App\Http\Controllers\PemesananController;
 use App\Http\Controllers\MejaController;
+use App\Http\Controllers\RiwayatPesananController;
 
 Route::get('/', [BrandaController::class, 'index'])
     ->name('Branda');
@@ -35,8 +36,16 @@ Route::post('/checkout/process', [CheckOutController::class, 'process'])
 Route::post('/pemesanan/simpan', [PemesananController::class, 'simpan'])
     ->name('pemesanan.simpan');
 
+
+Route::get('/riwayat-pesanan', [RiwayatPesananController::class, 'index'])
+->name('riwayat.pesanan');
+
 Route::post('/create-invoice', [PaymentController::class, 'createInvoice'])
     ->name('invoice.create');
 
 Route::post('/xendit/webhook', [PaymentController::class, 'webhook']);
+
+Route::post('/pay-again/{pesanan}', [PaymentController::class, 'payAgain'])
+    ->name('pay.again');
+
 // Route::post('/xendit/invoice', [PaymentController::class, 'createInvoice']);

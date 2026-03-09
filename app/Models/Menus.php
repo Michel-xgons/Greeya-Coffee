@@ -9,7 +9,7 @@ class Menus extends Model
     protected $table    = 'menus';
 
     protected $fillable = [
-        'id_kategori',
+        'kategori_id',
         'nama_menu',
         'harga',
         'deskripsi',
@@ -21,4 +21,6 @@ class Menus extends Model
     {
         return $this->belongsTo(Kategoris::class, 'kategori_id');
     }
+
+    
 }

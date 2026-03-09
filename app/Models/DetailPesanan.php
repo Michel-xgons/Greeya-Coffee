@@ -24,4 +24,5 @@ class DetailPesanan extends Model
     {
         return $this->belongsTo(Menus::class);
     }
+    
 }

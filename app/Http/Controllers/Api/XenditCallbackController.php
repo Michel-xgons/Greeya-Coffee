@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Pembayaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
-use App\Models\Transaction;
 
 class XenditCallbackController extends Controller
 {
@@ -28,7 +28,7 @@ class XenditCallbackController extends Controller
             DB::beginTransaction();
 
             // Find or create transaction
-            $transaction = Transaction::where('xendit_external_id', $externalId)->first();
+            $transaction = Pembayaran::where('xendit_external_id', $externalId)->first();
 
             if (!$transaction) {
                 return response()->json(['message' => 'Transaction not found'], 404);
@@ -37,19 +37,19 @@ class XenditCallbackController extends Controller
             $transaction->transaction_status = strtoupper($status);
 
             // Update related order
-            if ($transaction->order) {
+            if ($transaction->pesanan) {
                 if ($status === 'PAID') {
-                    $transaction->order->payment_status = 'PAID';
+                    $transaction->pesanan->payment_status = 'PAID';
                     $transaction->transaction_time = now();
                 } elseif ($status === 'EXPIRED') {
-                    $transaction->order->payment_status = 'EXPIRED';
+                    $transaction->pesanan->payment_status = 'EXPIRED';
                     $transaction->transaction_time = now();
                 } elseif ($status === 'FAILED') {
-                    $transaction->order->payment_status = 'FAILED';
+                    $transaction->pesanan->payment_status = 'FAILED';
                     $transaction->transaction_time = now();
                 }
 
-                $transaction->order->save();
+                $transaction->pesanan->save();
             }
 
             $transaction->save();

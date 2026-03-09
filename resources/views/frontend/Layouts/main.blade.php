@@ -28,23 +28,26 @@
 
                 <!-- Tombol Keranjang -->
                 <div class="position-relative">
-                    <button class="btn btn-light rounded-circle p-2 shadow-sm" id="btnCheckout" data-bs-toggle="modal"
+
+                    <button class="btn btn-light rounded-circle p-2 shadow-sm" data-bs-toggle="modal"
                         data-bs-target="#checkoutModal">
+
                         <i class="fas fa-shopping-cart"></i>
+
                     </button>
+
                     <span id="cartCount"
                         class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+
                         @php
                             $cart = session('cart', []);
-
-                            $total_item = 0;
-                            foreach ($cart as $item) {
-                                $total_item += $item['qty'];
-                            }
-
+                            $total_item = collect($cart)->sum('qty');
                         @endphp
+
                         {{ $total_item }}
+
                     </span>
+
                 </div>
 
                 <!-- Modal Checkout -->
@@ -57,25 +60,66 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
 
-                            <div class="modal-body text-center">
-                                @php
-                                    $cart = session('cart', []);
 
-                                    $total = 0;
-                                    foreach ($cart as $item) {
-                                        $total += $item['harga'] * $item['qty'];
-                                    }
-                                @endphp
+                            <div class="modal-body">
 
-                                <h6>Total yang harus dibayar:</h6>
+                                <div id="cartItems">
 
-                                <h3 class="fw-bold text-success my-3" id="modalTotal">
-                                    Rp {{ number_format($total, 0, ',', '.') }}
-                                </h3>
+                                    @php
+                                        $cart = session('cart', []);
+                                        $total = 0;
+                                    @endphp
 
-                                <p class="text-muted">
-                                    Pastikan pesanan Anda sudah benar sebelum checkout
-                                </p>
+                                    @forelse($cart as $item)
+                                        @php
+                                            $subtotal = $item['harga'] * $item['qty'];
+                                            $total += $subtotal;
+                                        @endphp
+
+                                        <div
+                                            class="d-flex justify-content-between align-items-center border-bottom py-2">
+
+                                            <div class="text-start">
+
+                                                <strong>{{ $item['nama'] }}</strong><br>
+
+                                                <small class="text-muted">
+                                                    {{ $item['qty'] }} x Rp
+                                                    {{ number_format($item['harga'], 0, ',', '.') }}
+                                                </small>
+
+                                            </div>
+
+                                            <div class="fw-bold">
+
+                                                Rp {{ number_format($subtotal, 0, ',', '.') }}
+
+                                            </div>
+
+                                        </div>
+
+                                    @empty
+
+                                        <div class="text-center text-muted py-3">
+                                            Keranjang masih kosong
+                                        </div>
+                                    @endforelse
+
+                                </div>
+
+                                <hr>
+
+                                <div class="d-flex justify-content-between">
+
+                                    <strong>Total</strong>
+
+                                    <strong id="modalTotal" class="text-success">
+
+                                        Rp {{ number_format($total, 0, ',', '.') }}
+
+                                    </strong>
+
+                                </div>
 
                             </div>
 
@@ -86,28 +130,33 @@
                                     Checkout
                                 </a>
                             </div>
-
                         </div>
                     </div>
                 </div>
-
-
             </div>
         </div>
     </header>
-
-
 
     {{-- Konten utama tiap halaman --}}
     <main class="container py-4">
         @yield('content')
     </main>
 
-    {{-- Footer --}}
-
     <!-- Script -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+    <!--Validasi-->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999">
+        <div id="cartToast" class="toast align-items-center text-bg-success border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMessage">
+                    Menu berhasil ditambahkan
+                </div>
+
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
 
 </body>
 

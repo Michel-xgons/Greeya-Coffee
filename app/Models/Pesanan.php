@@ -20,6 +20,10 @@ class Pesanan extends Model
     {
         return $this->belongsTo(Meja::class);
     }
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
 
     
     public function pembayaran()
