@@ -80,47 +80,71 @@
                                         {{ 'Rp.' . number_format($item->harga) }}
                                     </h6>
 
-                                    <form action="{{ route('cart.add') }}" method="POST" class="cart-form">
-                                        @csrf
+                                    @if ($kategori->nama_kategori == 'Minuman')
+                                        <div class="d-flex align-items-center justify-content-between mb-3 mt-3">
 
-                                        <input type="hidden" name="id" value="{{ $item->id }}">
-                                        <input type="hidden" name="nama" value="{{ $item->nama_menu }}">
-                                        <input type="hidden" name="harga" value="{{ $item->harga }}">
+                                            <div class="input-group product-qty">
 
-                                        <div>
-                                            <div class="d-flex align-items-center justify-content-between mb-3 mt-3">
+                                                <button type="button" class="quantity-left-minus btn btn-danger">−</button>
 
-                                                <div class="input-group product-qty">
+                                                <input type="number" class="form-control input-number qty-input"
+                                                    value="1" min="1" max="10">
 
-                                                    <span class="input-group-btn">
-                                                        <button type="button"
-                                                            class="quantity-left-minus btn btn-danger btn-number"
-                                                            data-type="minus">
-                                                            −
-                                                        </button>
-                                                    </span>
+                                                <button type="button"
+                                                    class="quantity-right-plus btn btn-primary">+</button>
 
-                                                    <input type="text" name="qty" class="form-control input-number"
-                                                        value="1">
-
-                                                    <span class="input-group-btn">
-                                                        <button type="button"
-                                                            class="quantity-right-plus btn btn-primary btn-number"
-                                                            data-type="plus">
-                                                            +
-                                                        </button>
-                                                    </span>
-
-                                                </div>
-
-                                                <small>Max:10</small>
                                             </div>
-                                            <button type="submit" class="col-12 btn btn-outline-primary btn-sm">
-                                                Tambah
-                                            </button>
 
                                         </div>
-                                    </form>
+
+                                        <a href="{{ route('detail.menu', $item->id) }}"
+                                            class="col-12 btn btn-outline-primary btn-sm go-detail">
+                                            Tambah
+                                        </a>
+                                    @else
+                                        <form action="{{ route('cart.add') }}" method="POST" class="cart-form">
+                                            @csrf
+
+                                            <input type="hidden" name="id" value="{{ $item->id }}">
+                                            <input type="hidden" name="nama" value="{{ $item->nama_menu }}">
+                                            <input type="hidden" name="harga" value="{{ $item->harga }}">
+
+                                            <div>
+                                                <div class="d-flex align-items-center justify-content-between mb-3 mt-3">
+
+                                                    <div class="input-group product-qty">
+
+                                                        <span class="input-group-btn">
+                                                            <button type="button"
+                                                                class="quantity-left-minus btn btn-danger btn-number"
+                                                                data-type="minus">
+                                                                −
+                                                            </button>
+                                                        </span>
+
+                                                        <input type="number" name="qty"
+                                                            class="form-control input-number" value="1" min="1"
+                                                            max="10">
+
+                                                        <span class="input-group-btn">
+                                                            <button type="button"
+                                                                class="quantity-right-plus btn btn-primary btn-number"
+                                                                data-type="plus">
+                                                                +
+                                                            </button>
+                                                        </span>
+
+                                                    </div>
+
+                                                    {{-- <small>Max:10</small> --}}
+                                                </div>
+                                                <button type="submit" class="col-12 btn btn-outline-primary btn-sm">
+                                                    Tambah
+                                                </button>
+
+                                            </div>
+                                        </form>
+                                    @endif
 
                                 </div>
 
@@ -145,119 +169,68 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-
             document.querySelectorAll('.product-qty').forEach(function(qtyGroup) {
-
                 const minusBtn = qtyGroup.querySelector('.quantity-left-minus');
                 const plusBtn = qtyGroup.querySelector('.quantity-right-plus');
-                const qtyInput = qtyGroup.querySelector('input[name="qty"]');
-
+                const qtyInput = qtyGroup.querySelector('input[name="qty"], .qty-input');
                 minusBtn.addEventListener('click', function() {
                     let value = parseInt(qtyInput.value);
-
                     if (value > 1) {
                         qtyInput.value = value - 1;
                     }
                 });
-
                 plusBtn.addEventListener('click', function() {
                     let value = parseInt(qtyInput.value);
-
                     if (value < 10) {
                         qtyInput.value = value + 1;
                     }
                 });
-
             });
-
         });
-    </script>
 
-    {{-- <script>
         document.addEventListener('DOMContentLoaded', function() {
-
+            const toastEl = document.getElementById('cartToast');
+            const toast = new bootstrap.Toast(toastEl);
             document.querySelectorAll('.cart-form').forEach(form => {
-
                 form.addEventListener('submit', function(e) {
                     e.preventDefault();
-
-                    const id = form.querySelector('[name="id_menu"]').value;
-                    const name = form.querySelector('[name="nama_menu"]').value;
-                    const price = parseInt(form.querySelector('[name="harga"]').value);
-                    const qty = parseInt(form.querySelector('[name="qty"]').value || 1);
-
-                    fetch("{{ route('cart.add') }}", {
+                    const formData = new FormData(form);
+                    fetch(form.action, {
                             method: 'POST',
+                            credentials: 'same-origin',
                             headers: {
-                                'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': document
                                     .querySelector('meta[name="csrf-token"]')
                                     .getAttribute('content')
-                            },
-                            body: JSON.stringify({
-                                id: id,
-                                name: name,
-                                price: price,
-                                change: qty
-                            })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            console.log('Cart updated:', data);
-                        });
-                });
-
-            });
-
-        });
-    </script> --}}
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-
-            const toastEl = document.getElementById('cartToast');
-            const toast = new bootstrap.Toast(toastEl);
-
-            document.querySelectorAll('.cart-form').forEach(form => {
-
-                form.addEventListener('submit', function(e) {
-
-                    e.preventDefault();
-
-                    const formData = new FormData(form);
-
-                    fetch(form.action, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector(
-                                    'meta[name="csrf-token"]').getAttribute('content')
                             },
                             body: formData
                         })
                         .then(res => res.json())
                         .then(data => {
-
                             if (data.success) {
-
                                 toast.show();
-
-                                document.getElementById('cartCount').innerText = data
-                                .total_item;
-
-                                document.getElementById('cartItems').innerHTML = data.html;
-
+                                document.getElementById('cartCount').innerText =
+                                    data.total_item;
+                                document.getElementById('cartItems').innerHTML =
+                                    data.html;
                                 document.getElementById('modalTotal').innerText =
                                     "Rp " + data.total.toLocaleString('id-ID');
-
                             }
-
                         });
-
                 });
-
             });
-
         });
+
+        document.querySelectorAll('.go-detail').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const card = btn.closest('.product-item');
+                const qty = card.querySelector('.qty-input').value;
+                const url = new URL(btn.href);
+                url.searchParams.set('qty', qty);
+                btn.href = url.toString();
+            });
+        });
+
     </script>
 
 @endsection

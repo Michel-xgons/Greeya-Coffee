@@ -24,15 +24,23 @@
                                     <div class="d-flex justify-content-between">
                                         <h5 class="mb-1">{{ $item['nama'] }}</h5>
                                         <div class="d-flex align-items-center gap-2">
+                                            <button onclick="removeItem('{{ $item['row_id'] }}')"
+                                                class="btn btn-sm btn-danger">
+                                                Hapus
+                                            </button>
                                             <button class="btn btn-sm btn-outline-dark"
-                                                onclick="updateQty('{{ $item['id'] }}', -1)">−</button>
+                                                onclick="updateQty('{{ $item['row_id'] }}', -1)">−</button>
                                             <span class="fw-bold">{{ $item['qty'] }}</span>
                                             <button class="btn btn-sm btn-outline-dark"
-                                                onclick="updateQty('{{ $item['id'] }}', 1)">+</button>
+                                                onclick="updateQty('{{ $item['row_id'] }}', 1)">+</button>
                                         </div>
                                     </div>
-                                    <div class="small text-muted">
-                                        Varian: {{ $item['varian'] ?? '-' }}</div>
+
+                                    @if (!empty($item['varian']))
+                                        <div class="small text-muted">
+                                            Varian: {{ $item['varian'] }}
+                                        </div>
+                                    @endif
 
                                     <div class="small text-muted">
                                         Harga: Rp{{ number_format($item['harga'], 0, ',', '.') }}
@@ -48,7 +56,7 @@
                                         </div>
                                     @endif
                                     <button class="btn btn-outline-primary btn-sm"
-                                        onclick="openNoteModal('{{ $item['id'] }}', '{{ $item['note'] ?? '' }}')">
+                                        onclick="openNoteModal('{{ $item['row_id'] }}','{{ $item['note'] ?? '' }}')">
                                         Tambah Catatan
                                     </button>
                                 </div>
@@ -75,12 +83,12 @@
                 </div>
                 <div class="d-flex justify-content-between">
                     <span>Biaya lainnya</span>
-                    <span id="fee">Rp{{ number_format(170, 0, ',', '.') }}</span>
+                    <span id="fee">Rp{{ number_format(4000, 0, ',', '.') }}</span>
                 </div>
                 <hr>
                 <div class="d-flex justify-content-between fw-bold">
                     <span>Total</span>
-                    <span id="grandTotal">{{ 'Rp' . number_format($total + 170, 0, ',', '.') }}</span>
+                    <span id="grandTotal">{{ 'Rp' . number_format($total + 4000, 0, ',', '.') }}</span>
                 </div>
             </div>
         </div>
@@ -92,7 +100,7 @@
             <div>
                 <div class="fw-bold">Total Pembayaran</div>
                 <div id="totalBayar" class="fs-5 text-danger fw-semibold">
-                    {{ 'Rp' . number_format($total + 170, 0, ',', '.') }}
+                    {{ 'Rp' . number_format($total + 4000, 0, ',', '.') }}
                 </div>
             </div>
             <form action="{{ route('checkout.process') }}" method="POST">
@@ -128,7 +136,26 @@
     </div>
 
     <script>
-        function updateQty(id, change) {
+        function removeItem(row_id) {
+            fetch('/cart/remove', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        row_id: row_id
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    location.reload()
+                })
+        }
+    </script>
+
+    <script>
+        function updateQty(row_id, change) {
             fetch("{{ route('cart.update') }}", {
                     method: "POST",
                     headers: {
@@ -136,13 +163,15 @@
                         "X-CSRF-TOKEN": "{{ csrf_token() }}"
                     },
                     body: JSON.stringify({
-                        id: id,
+                        row_id: row_id,
                         change: change
                     })
                 })
                 .then(res => res.json())
-                .then(() => {
-                    location.reload();
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    }
                 });
         }
     </script>
@@ -151,7 +180,6 @@
         function openNoteModal(id, existingNote = '') {
             document.getElementById('noteItemId').value = id;
             document.getElementById('noteTextarea').value = existingNote;
-
             let modal = new bootstrap.Modal(document.getElementById('noteModal'));
             modal.show();
         }
@@ -159,7 +187,6 @@
         function saveNote() {
             let id = document.getElementById('noteItemId').value;
             let note = document.getElementById('noteTextarea').value;
-
             fetch("{{ route('cart.note') }}", {
                     method: "POST",
                     headers: {
@@ -167,7 +194,7 @@
                         "X-CSRF-TOKEN": "{{ csrf_token() }}"
                     },
                     body: JSON.stringify({
-                        id: id,
+                        row_id: id,
                         note: note
                     })
                 })

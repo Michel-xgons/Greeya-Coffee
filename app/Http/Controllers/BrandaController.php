@@ -13,10 +13,10 @@ class BrandaController extends Controller
     {
         $cart = session('cart', []);
 
-        $total = 0;
-        foreach ($cart as $item) {
-            $total += $item['harga'] * $item['qty'];
-        }
+        // $total = 0;
+        // foreach ($cart as $item) {
+        //     $total += $item['harga'] * $item['qty'];
+        // }
 
         $kategoris = Kategoris::with('menus')->get();
         // dd($kategoris);
@@ -36,10 +36,10 @@ class BrandaController extends Controller
         $cart = session('cart', []);
 
         $qty     = (int) $request->qty;
-        $varian = $request->varian;
-        $note    = $request->note ?? '';
+        $varian = trim($request->varian ?? '');
+        $note   = trim($request->note ?? '');
 
-        $row_id = md5($menu->id . '-' . $varian . '-' . $note);
+        $row_id = md5($menu->id . '-' . $varian);
 
         if (isset($cart[$row_id])) {
 
@@ -58,7 +58,6 @@ class BrandaController extends Controller
             ];
         }
 
-        // session(['cart' => $cart]);
         session()->put('cart', $cart);
 
         $total = 0;
@@ -69,21 +68,9 @@ class BrandaController extends Controller
             $subtotal = $item['harga'] * $item['qty'];
             $total += $subtotal;
 
-            $html .= '
-        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-
-            <div class="text-start">
-                <strong>' . $item['nama'] . '</strong><br>
-                <small class="text-muted">
-                ' . $item['qty'] . ' x Rp ' . number_format($item['harga'], 0, ',', '.') . '
-                </small>
-            </div>
-
-            <div class="fw-bold">
-                Rp ' . number_format($subtotal, 0, ',', '.') . '
-            </div>
-
-        </div>';
+            $html = view('frontend.partials.cart_items', [
+                'cart' => $cart
+            ])->render();
         }
 
         return response()->json([
@@ -99,7 +86,8 @@ class BrandaController extends Controller
         $menu = Menus::findOrFail($id_menu);
 
         $from = $request->query('from');
+        $qty = $request->query('qty', 1);
 
-        return view('frontend.Menu.DetailMenu', compact('menu', 'from'));
+        return view('frontend.Menu.DetailMenu', compact('menu', 'from', 'qty'));
     }
 }

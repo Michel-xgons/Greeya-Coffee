@@ -9,6 +9,13 @@ class CheckOutController extends Controller
     public function index()
     {
         $cart = session('cart', []);
+        // Proteksi cart kosong
+        if (empty($cart)) {
+            return redirect()->route('Branda')
+                ->with('error', 'Keranjang masih kosong.');
+        }
+
+        
         $total = 0;
         foreach ($cart as $item) {
             $total += $item['harga'] * $item['qty'];
@@ -25,72 +32,92 @@ class CheckOutController extends Controller
 
     public function update(Request $request)
     {
-        $cart = session('cart', []);
+        // VALIDASI REQUEST
+        $request->validate([
+            'row_id' => 'required',
+            'change' => 'required|integer'
+        ]);
 
-        $found = false;
+        $cart = session()->get('cart', []);
 
-        foreach ($cart as &$item) {
-            if ($item['id'] == $request->id) {
-                $item['qty'] += $request->change;
-                if ($item['qty'] <= 0) {
-                    $item['qty'] = 0;
-                }
-                $found = true;
-                break;
+        $row_id = $request->row_id;
+        $change = (int) $request->change;
+
+        if (isset($cart[$row_id])) {
+
+            $cart[$row_id]['qty'] += $change;
+
+            if ($cart[$row_id]['qty'] <= 0) {
+                unset($cart[$row_id]);
             }
+
+            session()->put('cart', $cart);
         }
 
-        if (!$found && $request->change > 0) {
-            $cart[] = [
-                'id' => $request->id,
-                'name' => $request->name,
-                'price' => $request->price,
-                'qty' => 1,
-                'note' => '',
-                'variant' => ''
-            ];
+        // hitung ulang total
+        $grandTotal = 0;
+
+        foreach ($cart as $item) {
+            $grandTotal += $item['harga'] * $item['qty'];
         }
 
-        $cart = array_filter($cart, fn($i) => $i['qty'] > 0);
-
-        session(['cart' => array_values($cart)]);
-
-        return response()->json(session('cart'));
+        return response()->json([
+            'success' => true,
+            'total' => $grandTotal,
+            'cart' => $cart
+        ]);
     }
 
     public function note(Request $request)
     {
-        $cart = session('cart', []);
+        $cart = session()->get('cart', []);
 
-        foreach ($cart as &$item) {
-            if ($item['id'] == $request->id) {
-                $item['note'] = $request->note;
-                break;
-            }
+        $row_id = $request->row_id;
+
+        if (isset($cart[$row_id])) {
+            $cart[$row_id]['note'] = $request->note;
         }
 
-        session(['cart' => $cart]);
+        session()->put('cart', $cart);
 
         return response()->json(['success' => true]);
     }
 
+    public function remove(Request $request)
+    {
+        $cart = session()->get('cart', []);
+
+        $row_id = $request->row_id;
+
+        if (isset($cart[$row_id])) {
+            unset($cart[$row_id]);
+        }
+
+        session()->put('cart', $cart);
+
+        return response()->json([
+            'success' => true,
+            'cart' => $cart
+        ]);
+    }
+
     public function process()
-{
-    $cart = session('cart', []);
+    {
+        $cart = session('cart', []);
 
-    // Cek cart kosong
-    if (empty($cart)) {
-        return redirect()
-            ->route('Branda')
-            ->with('error', 'Keranjang kosong, silakan pilih pesanan.');
+        // Cek cart kosong
+        if (empty($cart)) {
+            return redirect()
+                ->route('Branda')
+                ->with('error', 'Keranjang kosong, silakan pilih pesanan.');
+        }
+
+        // Cek customer sudah isi atau belum
+        if (!session()->has('customer')) {
+            return redirect()->route('Pemesanan');
+        }
+
+        // Kalau sudah pernah isi
+        return redirect()->route('payment'); // nanti Xendit
     }
-
-    // Cek customer sudah isi atau belum
-    if (!session()->has('customer')) {
-        return redirect()->route('Pemesanan');
-    }
-
-    // Kalau sudah pernah isi
-    return redirect()->route('payment'); // nanti Xendit
-}
 }

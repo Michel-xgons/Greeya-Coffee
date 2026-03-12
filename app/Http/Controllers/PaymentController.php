@@ -14,6 +14,23 @@ class PaymentController extends Controller
 {
     protected XenditService $xendit;
 
+    public function index()
+    {
+        $cart = session('cart', []);
+
+        if (empty($cart)) {
+            return redirect()->route('Branda')
+                ->with('error', 'Keranjang kosong.');
+        }
+
+        if (!session()->has('customer')) {
+            return redirect()->route('Pemesanan')
+                ->with('error', 'Silakan isi data pemesan.');
+        }
+
+        return view('frontend.payment');
+    }
+
     public function __construct(XenditService $xendit)
     {
         $this->xendit = $xendit;
@@ -109,16 +126,15 @@ class PaymentController extends Controller
     {
         return redirect(route('history.order'))->with('error', 'Payment failed');
     }
-    
+
     public function payAgain(Pesanan $pesanan)
-{
-    if ($pesanan->payment_status === 'paid') {
-        return redirect()->back()->with('error', 'Pesanan sudah dibayar');
+    {
+        if ($pesanan->payment_status === 'paid') {
+            return redirect()->back()->with('error', 'Pesanan sudah dibayar');
+        }
+
+        $pembayarans = $this->xendit->createQrisTransaction($pesanan);
+
+        return redirect($pembayarans->invoice_url);
     }
-
-    $pembayarans = $this->xendit->createQrisTransaction($pesanan);
-
-    return redirect($pembayarans->invoice_url);
-}
-    
 }

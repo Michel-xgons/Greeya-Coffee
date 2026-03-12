@@ -81,7 +81,14 @@
 
                                             <div class="text-start">
 
-                                                <strong>{{ $item['nama'] }}</strong><br>
+                                                <strong>
+                                                    {{ $item['nama'] }}
+                                                    @if (!empty($item['varian']))
+                                                        ({{ $item['varian'] }})
+                                                    @endif
+                                                </strong>
+                                                
+                                                <br>
 
                                                 <small class="text-muted">
                                                     {{ $item['qty'] }} x Rp

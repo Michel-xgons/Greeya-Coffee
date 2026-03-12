@@ -25,12 +25,14 @@ Route::prefix('cart')->group(function () {
 Route::post('/cart/update', [CheckOutController::class, 'update'])
     ->name('cart.update');
 
+Route::post('/cart/remove', [CheckOutController::class, 'remove'])->name('cart.remove');
+
 Route::get('/pemesanan', [PemesananController::class, 'index'])
     ->name('Pemesanan');
 
 Route::get('/DetailMenu/{id}', [BrandaController::class, 'show'])
     ->name('detail.menu');
-    
+
 Route::post('/checkout/process', [CheckOutController::class, 'process'])
     ->name('checkout.process');
 Route::post('/pemesanan/simpan', [PemesananController::class, 'simpan'])
@@ -38,7 +40,7 @@ Route::post('/pemesanan/simpan', [PemesananController::class, 'simpan'])
 
 
 Route::get('/riwayat-pesanan', [RiwayatPesananController::class, 'index'])
-->name('riwayat.pesanan');
+    ->name('riwayat.pesanan');
 
 Route::post('/create-invoice', [PaymentController::class, 'createInvoice'])
     ->name('invoice.create');
