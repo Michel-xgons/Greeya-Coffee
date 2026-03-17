@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\Pesanan;
 use Illuminate\Support\Str;
+use App\Models\Pembayaran;
 use App\Services\XenditService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 
 
@@ -82,7 +84,6 @@ class PaymentController extends Controller
             ]
         );
 
-
         // simpan pesanan ke database
         $pesanan = Pesanan::create([
             'kode_pesanan'          => 'ORD-' . Str::uuid(),
@@ -93,8 +94,6 @@ class PaymentController extends Controller
             'catatan'               => 'Test pesanan',
             'total_harga'           => $totalHarga
         ]);
-
-
 
         // simpan order items
         foreach ($cart as $item) {
@@ -107,8 +106,6 @@ class PaymentController extends Controller
                 'harga'             => $item['harga'],
             ]);
         }
-
-        // dd($pesanan->detailPesanans());
 
         $pembayarans = (new XenditService())->createQrisTransaction($pesanan);
 
@@ -137,4 +134,48 @@ class PaymentController extends Controller
 
         return redirect($pembayarans->invoice_url);
     }
+
+    public function webhook(Request $request)
+{
+    $data = $request->all();
+
+    Log::info('Webhook Xendit:', $data);
+
+    $externalId = $data['external_id'] ?? null;
+    $status     = $data['status'] ?? null;
+
+    Log::info('EXTERNAL ID MASUK: ' . $externalId);
+    
+    if (!$externalId) {
+        return response()->json(['message' => 'external_id tidak ada'], 400);
+    }
+
+    $pembayaran = Pembayaran::where('xendit_external_id', $externalId)->first();
+
+    if (!$pembayaran) {
+        return response()->json(['message' => 'Pembayaran tidak ditemukan'], 404);
+    }
+
+    if ($status === 'PAID') {
+
+        $pembayaran->transaction_status = 'PAID';
+        $pembayaran->save();
+
+        $pesanan = Pesanan::find($pembayaran->pesanan_id);
+        $pesanan->payment_status = 'paid';
+        $pesanan->save();
+    }
+
+    if ($status === 'EXPIRED') {
+
+        $pembayaran->transaction_status = 'EXPIRED';
+        $pembayaran->save();
+
+        $pesanan = Pesanan::find($pembayaran->pesanan_id);
+        $pesanan->payment_status = 'expired';
+        $pesanan->save();
+    }
+
+    return response()->json(['success' => true]);
+}
 }

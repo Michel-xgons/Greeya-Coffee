@@ -22,6 +22,7 @@ Route::prefix('cart')->group(function () {
     Route::post('/note', [CheckOutController::class, 'note'])
         ->name('cart.note');
 });
+
 Route::post('/cart/update', [CheckOutController::class, 'update'])
     ->name('cart.update');
 
@@ -38,14 +39,16 @@ Route::post('/checkout/process', [CheckOutController::class, 'process'])
 Route::post('/pemesanan/simpan', [PemesananController::class, 'simpan'])
     ->name('pemesanan.simpan');
 
-
 Route::get('/riwayat-pesanan', [RiwayatPesananController::class, 'index'])
     ->name('riwayat.pesanan');
 
 Route::post('/create-invoice', [PaymentController::class, 'createInvoice'])
     ->name('invoice.create');
 
-Route::post('/xendit/webhook', [PaymentController::class, 'webhook']);
+// Route::post('/xendit/webhook', [PaymentController::class, 'webhook']);
+
+// Route::post('/xendit/webhook', [PaymentController::class, 'webhook'])
+//     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 
 Route::post('/pay-again/{pesanan}', [PaymentController::class, 'payAgain'])
     ->name('pay.again');
