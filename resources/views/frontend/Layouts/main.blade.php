@@ -8,8 +8,11 @@
     <title>@yield('title', 'greeya coffee')</title>
 
     <!-- CSS -->
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -19,12 +22,19 @@
         <div class="bg-secondary py-3 text-center position-relative">
             <img src="{{ asset('images/Logo.png') }}" style="width:200px; height:100px; object-fit:contain;">
             <div class="position-absolute top-0 end-0 d-flex gap-2 m-2">
-                <button class="btn btn-light rounded-circle p-2 shadow-sm" aria-label="Search">
-                    <i class="fas fa-search"></i>
-                </button>
-                <button class="btn btn-light rounded-circle p-2 shadow-sm" aria-label="Menu">
+
+                <div class="d-flex align-items-center gap-2">
+                    <input type="text" id="searchBox" class="form-control d-none" placeholder="Cari menu...">
+                    <button id="btnSearch" class="btn btn-light rounded-circle p-2 shadow-sm">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+
+                <button class="btn btn-light rounded-circle p-2 shadow-sm" data-bs-toggle="offcanvas"
+                    data-bs-target="#offcanvasMenu">
                     <i class="fas fa-bars"></i>
                 </button>
+
 
                 <!-- Tombol Keranjang -->
                 <div class="position-relative">
@@ -87,7 +97,7 @@
                                                         ({{ $item['varian'] }})
                                                     @endif
                                                 </strong>
-                                                
+
                                                 <br>
 
                                                 <small class="text-muted">
@@ -149,8 +159,76 @@
         @yield('content')
     </main>
 
+    <div class="offcanvas offcanvas-start" id="offcanvasMenu">
+        <div class="offcanvas-header">
+            <h5>Menu</h5>
+            <button class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+
+        <div class="offcanvas-body">
+            <ul class="list-unstyled">
+                <li><a href="#">Semua</a></li>
+                <li><a href="#">Makanan</a></li>
+                <li><a href="#">Minuman</a></li>
+            </ul>
+        </div>
+    </div>
+
     <!-- Script -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const btnSearch = document.getElementById('btnSearch');
+            const searchBox = document.getElementById('searchBox');
+
+            // 🔍 TOGGLE SEARCH
+            btnSearch.addEventListener('click', function() {
+                searchBox.classList.toggle('d-none');
+
+                if (!searchBox.classList.contains('d-none')) {
+                    searchBox.focus();
+                } else {
+                    searchBox.value = '';
+                    resetItems();
+                }
+            });
+
+            // 🔎 FILTER MENU
+            searchBox.addEventListener('input', function() {
+
+                let keyword = this.value.toLowerCase();
+
+                document.querySelectorAll('.product-item').forEach(item => {
+
+                    let nama = item.querySelector('h6')?.innerText.toLowerCase() || '';
+                    let col = item.closest('[class^="col"]');
+
+                    if (!col) return;
+
+                    if (keyword === '') {
+                        col.style.display = '';
+                    } else {
+                        col.style.display = nama.includes(keyword) ? '' : 'none';
+                    }
+
+                });
+
+            });
+
+            // 🔄 RESET
+            function resetItems() {
+                document.querySelectorAll('.product-item').forEach(item => {
+                    let col = item.closest('[class^="col"]');
+                    if (col) col.style.display = '';
+                });
+            }
+
+        }); // ✅ INI YANG KAMU KURANGIN
+    </script>
+
+
 
     <!--Validasi-->
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999">

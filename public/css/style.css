@@ -1,0 +1,29 @@
+.card {
+    border-radius: 16px;
+    transition: all 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.qty-animate {
+    transform: scale(1.3);
+    opacity: 0.5;
+    transition: all 0.2s ease;
+    -webkit-transition: all 0.2s ease;
+    -moz-transition: all 0.2s ease;
+    -ms-transition: all 0.2s ease;
+    -o-transition: all 0.2s ease;
+}
+
+.fade-update {
+    opacity: 0.3;
+    transition: opacity 0.2s ease;
+}
+
+.scale-up {
+    transform: scale(1.2);
+    transition: 0.15s;
+}

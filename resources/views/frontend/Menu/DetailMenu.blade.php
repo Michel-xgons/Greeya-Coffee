@@ -31,7 +31,7 @@
 
 
                     <!-- variant -->
-                    @if ($menu->kategori->nama_kategori == 'Minuman')
+                    @if (optional($menu->kategori)->nama_kategori == 'Minuman')
                         <div class="fw-semibold mb-2">Pilih Varian</div>
 
                         <div class="form-check mb-2">
@@ -44,7 +44,6 @@
                             <label class="form-check-label">ICE</label>
                         </div>
                     @else
-                        <input type="hidden" name="varian" value="">
                     @endif
 
                     <!-- qty -->
@@ -66,17 +65,35 @@
         </div>
     </div>
 
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            const toastEl = document.getElementById('cartToast');
-            const toast = new bootstrap.Toast(toastEl);
-
             const form = document.querySelector('.cart-form');
+            if (!form) return;
 
             form.addEventListener('submit', function(e) {
-
                 e.preventDefault();
+
+                const btn = form.querySelector('button');
+                btn.disabled = true;
+
+                const varianInput = document.querySelectorAll('input[name="varian"]');
+
+                if (varianInput.length > 0) {
+                    const selected = document.querySelector('input[name="varian"]:checked');
+                    if (!selected) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Oops...',
+                            text: 'Pilih varian dulu!',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        btn.disabled = false;
+                        return;
+                    }
+                }
 
                 const formData = new FormData(form);
 
@@ -90,32 +107,48 @@
                         },
                         body: formData
                     })
-                    .then(res => res.json())
+                    .then(async res => {
+                        const data = await res.json();
+                        if (!res.ok) throw data;
+                        return data;
+                    })
                     .then(data => {
-
                         if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: 'Menu ditambahkan ke keranjang',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
 
-                            toast.show();
+                            form.reset();
+                            
+                            const cartCount = document.getElementById('cartCount');
+                            const cartItems = document.getElementById('cartItems');
+                            const modalTotal = document.getElementById('modalTotal');
 
-                            document.getElementById('cartCount').innerText =
-                                data.total_item;
-
-                            document.getElementById('cartItems').innerHTML =
-                                data.html;
-
-                            document.getElementById('modalTotal').innerText =
-                                "Rp " + data.total.toLocaleString('id-ID');
-
+                            if (cartCount) cartCount.innerText = data.total_item;
+                            if (cartItems) cartItems.innerHTML = data.html;
+                            if (modalTotal) {
+                                modalTotal.innerText = "Rp " + data.total.toLocaleString('id-ID');
+                            }
                         }
-
+                    })
+                    .catch(err => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: err.message || 'Terjadi kesalahan',
+                        });
+                    })
+                    .finally(() => {
+                        btn.disabled = false;
                     });
 
             });
 
         });
-    
-   
-
     </script>
 
 @endsection

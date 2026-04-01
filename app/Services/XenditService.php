@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Pesanan;
 use App\Models\Pembayaran;
-use Faker\Provider\Payment;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
@@ -34,11 +33,12 @@ class XenditService
             'amount' => $grossAmount,
             'description' => 'Pembayaran Order #' . $externalId,
             'currency' => 'IDR',
-            'invoice_duration' => 600,
+            // 'invoice_duration' => 600,
+            'expiry_date' => now()->addMinutes(10)->toISOString(),
             'customer' => [
-                'given_names' => $pesanan->customer->nama ?? 'Customer',
-                'email' => $pesanan->customer->email ?? 'customer@example.com',
-                'mobile_number' => $pesanan->customer->phone ?? '08123456789',
+                'given_names' => $pesanan->customer?->name ?? 'Customer',
+                'email' => $pesanan->customer?->email ?? 'customer@example.com',
+                'mobile_number' => $pesanan->customer?->no_telpon ?? '08123456789',
             ],
             'customer_notification_preference' => [
                 'invoice_created' => ['email'],
@@ -46,14 +46,14 @@ class XenditService
                 'invoice_paid' => ['email'],
                 'invoice_expired' => ['email'],
             ],
-            'success_redirect_url' => url('/payment-success'),
+            'success_redirect_url' => url('/payment/' . $pesanan->id),
             'failure_redirect_url' => url('/payment-failure'),
             'items' =>
 
             $pesanan->detailPesanans->map(function ($item) {
                 return [
                     'id'        => $item->id,
-                    'price'     => $item->harga, 
+                    'price'     => $item->harga,
                     'quantity'  => $item->jumlah,
                     'name'      => $item->menu->nama_menu ?? 'Menu',
                 ];
@@ -79,6 +79,9 @@ class XenditService
         //     'env' => env('XENDIT_SECRET_KEY'),
         //     'config' => config('services.xendit.secret_key'),
         // ]);
+
+        Log::info('PAYLOAD KIRIM:', $payload);
+
         $response = Http::withBasicAuth($this->apiKey, '')
             ->withHeaders($headers)
             ->post('https://api.xendit.co/v2/invoices', $payload);
@@ -100,7 +103,7 @@ class XenditService
             'pesanan_id' => $pesanan->id,
             'xendit_external_id' => $externalId,
             'payment_type' => 'qris',
-            'transaction_status' => 'PENDING',
+            'transaction_status' => 'pending',
             'gross_amount' => $grossAmount,
             'invoice_url' => $result['invoice_url'] ?? null,
             'expiry_time' => $expiry

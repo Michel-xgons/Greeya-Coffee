@@ -62,92 +62,94 @@
                     <div class="row mt-4">
 
                         @foreach ($kategori->menus as $item)
-                            <div class="col-6 col-md-3 col-lg-3">
+                            <div class="col-6 col-md-6 col-lg-4 mb-4">
+                                <div class="card h-100 shadow-sm border-0 rounded-4">
+                                    <div class="card-body product-item py-3">
 
-                                <div class="product-item">
+                                        <figure>
+                                            <a href="{{ route('detail.menu', $item->id) }}">
 
-                                    <figure>
-                                        <a href="{{ route('detail.menu', $item->id) }}">
+                                                <img src="{{ asset('storage/' . $item->gambar) }}"
+                                                    class="w-100 object-fit-cover rounded-top" style="height: 180px;">
+                                            </a>
+                                        </figure>
 
-                                            <img src="{{ asset('storage/' . $item->gambar) }}"
-                                                style="width: 100%; height: 100px; object-fit:cover;">
-                                        </a>
-                                    </figure>
+                                        <h6 class="fw-semibold mb-1">{{ $item->nama_menu }}</h6>
 
-                                    <h3 class="mt-0 mb-2">{{ $item->nama_menu }}</h3>
-
-                                    <h6 class="mt-2 mb-2">
-                                        {{ 'Rp.' . number_format($item->harga) }}
-                                    </h6>
-
-                                    @if ($kategori->nama_kategori == 'Minuman')
-                                        <div class="d-flex align-items-center justify-content-between mb-3 mt-3">
-
-                                            <div class="input-group product-qty">
-
-                                                <button type="button" class="quantity-left-minus btn btn-danger">−</button>
-
-                                                <input type="number" class="form-control input-number qty-input"
-                                                    value="1" min="1" max="10">
-
-                                                <button type="button"
-                                                    class="quantity-right-plus btn btn-primary">+</button>
-
-                                            </div>
-
+                                        <div class="fw-bold text-dark mb-2">
+                                            {{ 'Rp.' . number_format($item->harga) }}
                                         </div>
 
-                                        <a href="{{ route('detail.menu', $item->id) }}"
-                                            class="col-12 btn btn-outline-primary btn-sm go-detail">
-                                            Tambah
-                                        </a>
-                                    @else
-                                        <form action="{{ route('cart.add') }}" method="POST" class="cart-form">
-                                            @csrf
+                                        @if (optional($kategori)->nama_kategori == 'Minuman')
+                                            <div class="d-flex align-items-center justify-content-between mb-3 mt-3">
 
-                                            <input type="hidden" name="id" value="{{ $item->id }}">
-                                            <input type="hidden" name="nama" value="{{ $item->nama_menu }}">
-                                            <input type="hidden" name="harga" value="{{ $item->harga }}">
+                                                <div class="d-flex align-items-center border rounded-pill px-2">
 
-                                            <div>
-                                                <div class="d-flex align-items-center justify-content-between mb-3 mt-3">
+                                                    <button type="button" class="btn btn-sm border-0"
+                                                        onclick="changeQty(this, -1)">
+                                                        −
+                                                    </button>
 
-                                                    <div class="input-group product-qty">
+                                                    <input type="number" value="1" name="qty" min="1"
+                                                        class="border-0 text-center" style="width:30px">
 
-                                                        <span class="input-group-btn">
-                                                            <button type="button"
-                                                                class="quantity-left-minus btn btn-danger btn-number"
-                                                                data-type="minus">
-                                                                −
-                                                            </button>
-                                                        </span>
+                                                    <button type="button" class="btn btn-sm border-0"
+                                                        onclick="changeQty(this, 1)">
+                                                        +
+                                                    </button>
 
-                                                        <input type="number" name="qty"
-                                                            class="form-control input-number" value="1" min="1"
-                                                            max="10">
-
-                                                        <span class="input-group-btn">
-                                                            <button type="button"
-                                                                class="quantity-right-plus btn btn-primary btn-number"
-                                                                data-type="plus">
-                                                                +
-                                                            </button>
-                                                        </span>
-
-                                                    </div>
-
-                                                    {{-- <small>Max:10</small> --}}
                                                 </div>
-                                                <button type="submit" class="col-12 btn btn-outline-primary btn-sm">
-                                                    Tambah
-                                                </button>
 
                                             </div>
-                                        </form>
-                                    @endif
+
+                                            <a href="{{ route('detail.menu', $item->id) }}"
+                                                class="col-12 btn btn-dark rounded-pill w-100 fw-semibold go-detail">
+                                                Tambah
+                                            </a>
+                                        @else
+                                            <form action="{{ route('cart.add') }}" method="POST" class="cart-form">
+                                                @csrf
+
+                                                <input type="hidden" name="id" value="{{ $item->id }}">
+                                                <input type="hidden" name="nama" value="{{ $item->nama_menu }}">
+                                                <input type="hidden" name="harga" value="{{ $item->harga }}">
+
+                                                <div>
+                                                    <div
+                                                        class="d-flex align-items-center justify-content-between mb-3 mt-3">
+
+                                                        <div class="d-flex align-items-center border rounded-pill px-2">
+
+                                                            <button type="button" class="btn btn-sm border-0"
+                                                                onclick="changeQty(this, -1)">
+                                                                −
+                                                            </button>
+
+                                                            <input type="number" value="1" name="qty"
+                                                                min="1" class="border-0 text-center"
+                                                                style="width:30px">
+
+                                                            <button type="button" class="btn btn-sm border-0"
+                                                                onclick="changeQty(this, 1)">
+                                                                +
+                                                            </button>
+
+                                                        </div>
+
+                                                        {{-- <small>Max:10</small> --}}
+                                                    </div>
+                                                    <button type="submit"
+                                                        class="col-12 btn btn-dark rounded-pill w-100 fw-semibold">
+                                                        Tambah
+                                                    </button>
+
+                                                </div>
+                                            </form>
+                                        @endif
+
+                                    </div>
 
                                 </div>
-
                             </div>
                         @endforeach
 
@@ -166,71 +168,105 @@
         @endforeach
     </div>
 
-
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            document.querySelectorAll('.product-qty').forEach(function(qtyGroup) {
-                const minusBtn = qtyGroup.querySelector('.quantity-left-minus');
-                const plusBtn = qtyGroup.querySelector('.quantity-right-plus');
-                const qtyInput = qtyGroup.querySelector('input[name="qty"], .qty-input');
-                minusBtn.addEventListener('click', function() {
-                    let value = parseInt(qtyInput.value);
-                    if (value > 1) {
-                        qtyInput.value = value - 1;
-                    }
-                });
-                plusBtn.addEventListener('click', function() {
-                    let value = parseInt(qtyInput.value);
-                    if (value < 10) {
-                        qtyInput.value = value + 1;
-                    }
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof Swal === 'undefined') {
+                console.error('SweetAlert2 not loaded!');
+                return;
+            }
+
+            document.querySelectorAll('.go-detail').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const card = this.closest('.product-item');
+                    const qtyInput = card.querySelector('input[name="qty"]');
+                    const qty = qtyInput ? qtyInput.value : 1;
+                    const url = new URL(this.href);
+                    url.searchParams.set('qty', qty);
+                    window.location.href = url.toString();
                 });
             });
-        });
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const toastEl = document.getElementById('cartToast');
-            const toast = new bootstrap.Toast(toastEl);
             document.querySelectorAll('.cart-form').forEach(form => {
                 form.addEventListener('submit', function(e) {
                     e.preventDefault();
+
+                    const btn = form.querySelector('button[type="submit"]');
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menambahkan...';
+
                     const formData = new FormData(form);
+
                     fetch(form.action, {
                             method: 'POST',
-                            credentials: 'same-origin',
-                            headers: {
-                                'X-CSRF-TOKEN': document
-                                    .querySelector('meta[name="csrf-token"]')
-                                    .getAttribute('content')
-                            },
-                            body: formData
+                            body: formData, // FormData sudah include CSRF
+                            credentials: 'same-origin'
                         })
-                        .then(res => res.json())
+                        .then(async res => {
+                            const data = await res.json();
+
+                            if (!res.ok) {
+                                const errorMsg = data.message || data.error ||
+                                    'Terjadi kesalahan server';
+                                throw new Error(errorMsg);
+                            }
+
+                            return data;
+                        })
                         .then(data => {
                             if (data.success) {
-                                toast.show();
-                                document.getElementById('cartCount').innerText =
-                                    data.total_item;
-                                document.getElementById('cartItems').innerHTML =
-                                    data.html;
-                                document.getElementById('modalTotal').innerText =
-                                    "Rp " + data.total.toLocaleString('id-ID');
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: 'Menu ditambahkan ke keranjang',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+
+                                // Update cart UI
+                                updateCartUI(data);
                             }
+                        })
+                        .catch(err => {
+                            console.error('Cart error:', err);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal!',
+                                text: err.message ||
+                                    'Terjadi kesalahan saat menambahkan ke keranjang'
+                            });
+                        })
+                        .finally(() => {
+                            btn.disabled = false;
+                            btn.innerHTML = 'Tambah';
                         });
                 });
             });
         });
 
-        document.querySelectorAll('.go-detail').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                const card = btn.closest('.product-item');
-                const qty = card.querySelector('.qty-input').value;
-                const url = new URL(btn.href);
-                url.searchParams.set('qty', qty);
-                btn.href = url.toString();
-            });
-        });
+        function updateCartUI(data) {
+            const cartCount = document.getElementById('cartCount');
+            const cartItems = document.getElementById('cartItems');
+            const modalTotal = document.getElementById('modalTotal');
 
+            if (cartCount) cartCount.innerText = data.total_item;
+            if (cartItems) cartItems.innerHTML = data.html;
+            if (modalTotal) modalTotal.innerText = "Rp " + data.total.toLocaleString('id-ID');
+        }
+    </script>
+
+    <script>
+        function changeQty(btn, change) {
+            let input = btn.parentElement.querySelector('input[name="qty"]');
+            if (!input) return;
+
+            let val = parseInt(input.value) || 1;
+
+            if (change < 0 && val <= 1) return; // Min 1
+            if (val + change < 1) return;
+
+            input.value = val + change;
+        }
     </script>
 
 @endsection

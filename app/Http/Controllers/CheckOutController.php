@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
 
 class CheckOutController extends Controller
@@ -15,7 +14,7 @@ class CheckOutController extends Controller
                 ->with('error', 'Keranjang masih kosong.');
         }
 
-        
+
         $total = 0;
         foreach ($cart as $item) {
             $total += $item['harga'] * $item['qty'];
@@ -32,34 +31,39 @@ class CheckOutController extends Controller
 
     public function update(Request $request)
     {
-        // VALIDASI REQUEST
         $request->validate([
             'row_id' => 'required',
             'change' => 'required|integer'
         ]);
 
         $cart = session()->get('cart', []);
-
         $row_id = $request->row_id;
         $change = (int) $request->change;
 
-        if (isset($cart[$row_id])) {
-
-            $cart[$row_id]['qty'] += $change;
-
-            if ($cart[$row_id]['qty'] <= 0) {
-                unset($cart[$row_id]);
-            }
-
-            session()->put('cart', $cart);
+        if (!isset($cart[$row_id])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Item tidak ditemukan'
+            ]);
         }
 
-        // hitung ulang total
-        $grandTotal = 0;
+        $cart[$row_id]['qty'] += $change;
 
-        foreach ($cart as $item) {
-            $grandTotal += $item['harga'] * $item['qty'];
+        // Minimal qty
+        if ($cart[$row_id]['qty'] < 1) {
+            unset($cart[$row_id]);
         }
+
+        // Maksimal qty
+        if (isset($cart[$row_id]) && $cart[$row_id]['qty'] > 100) {
+            $cart[$row_id]['qty'] = 100;
+        }
+
+        session()->put('cart', $cart);
+
+        $grandTotal = collect($cart)->sum(function ($item) {
+            return $item['harga'] * $item['qty'];
+        });
 
         return response()->json([
             'success' => true,
@@ -70,17 +74,31 @@ class CheckOutController extends Controller
 
     public function note(Request $request)
     {
-        $cart = session()->get('cart', []);
+        $request->validate([
+            'row_id' => 'required',
+            'note' => 'nullable|string|max:255'
+        ]);
 
+        $cart = session()->get('cart', []);
         $row_id = $request->row_id;
 
-        if (isset($cart[$row_id])) {
-            $cart[$row_id]['note'] = $request->note;
+        if (!isset($cart[$row_id])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Item tidak ditemukan'
+            ], 404);
         }
+
+        $note = trim($request->note);
+
+        $cart[$row_id]['note'] = $note === '' ? null : $note;
 
         session()->put('cart', $cart);
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success' => true,
+            'note' => $cart[$row_id]['note']
+        ]);
     }
 
     public function remove(Request $request)
@@ -103,21 +121,18 @@ class CheckOutController extends Controller
 
     public function process()
     {
-        $cart = session('cart', []);
-
         // Cek cart kosong
-        if (empty($cart)) {
-            return redirect()
-                ->route('Branda')
-                ->with('error', 'Keranjang kosong, silakan pilih pesanan.');
+        if (empty(session('cart'))) {
+            return redirect()->route('Branda')
+                ->with('error', 'Keranjang kosong');
         }
 
-        // Cek customer sudah isi atau belum
+        // Cek customer
         if (!session()->has('customer')) {
-            return redirect()->route('Pemesanan');
+            return redirect()->route('Pemesanan')
+                ->with('error', 'Silakan isi data pemesan');
         }
 
-        // Kalau sudah pernah isi
-        return redirect()->route('payment'); // nanti Xendit
+        return redirect()->route('payment');
     }
 }

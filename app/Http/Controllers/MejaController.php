@@ -17,7 +17,6 @@ class MejaController extends Controller
             'meja_id' => $meja->id,
             'nomor_meja' => $meja->nomor_meja,
         ]);
-
         
 
         return redirect('/'); // arahkan ke beranda

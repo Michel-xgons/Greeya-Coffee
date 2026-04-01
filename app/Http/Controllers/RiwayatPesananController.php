@@ -3,21 +3,46 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pesanan;
+use Illuminate\Http\Request;
 
 class RiwayatPesananController extends Controller
 {
     public function index()
     {
-        $no_hp = session('phone');
+        $customer_id = session('customer_id');
 
-        $riwayat = Pesanan::with(['customer','detailPesanans.menu'])
-            ->whereHas('customer', function ($query) use ($no_hp) {
-                $query->where('no_telpon', $no_hp);
-            })
-            ->whereIn('payment_status', ['unpaid','pending'])
+        if (!$customer_id) {
+            return redirect()->back()->with('error', 'Session hilang');
+        }
+
+        $riwayat = Pesanan::with(['customer', 'detailPesanans.menu'])
+            ->where('customer_id', $customer_id)
             ->latest()
             ->get();
 
-        return view('frontend.Menu.RiwayatPesanan', compact('riwayat'));
+        return view('frontend.riwayat.index', compact('riwayat'));
     }
+
+    public function getRiwayat(Request $request)
+    {
+        $status = $request->status;
+        $customer_id = session('customer_id');
+
+        $query = Pesanan::with(['customer', 'detailPesanans.menu'])
+            ->where('customer_id', $customer_id);
+
+        if ($status && $status != 'all') {
+            $query->whereRaw('LOWER(payment_status) = ?', [strtolower($status)]);
+        }
+
+        $riwayat = $query->latest()->get();
+
+        $html = view('frontend.riwayat._list', compact('riwayat'))->render();
+
+        return response()->json([
+            'html' => $html
+        ]);
+    }
+
+    
 }

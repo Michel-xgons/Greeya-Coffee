@@ -45,12 +45,20 @@ Route::get('/riwayat-pesanan', [RiwayatPesananController::class, 'index'])
 Route::post('/create-invoice', [PaymentController::class, 'createInvoice'])
     ->name('invoice.create');
 
-// Route::post('/xendit/webhook', [PaymentController::class, 'webhook']);
+Route::get('/payment/{id}', [PaymentController::class, 'show'])
+    ->name('payment.show');
 
-// Route::post('/xendit/webhook', [PaymentController::class, 'webhook'])
-//     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+Route::get('/riwayat/data', [RiwayatPesananController::class, 'getRiwayat']);
 
 Route::post('/pay-again/{pesanan}', [PaymentController::class, 'payAgain'])
     ->name('pay.again');
 
-// Route::post('/xendit/invoice', [PaymentController::class, 'createInvoice']);
+Route::post('/cart/destroy', function () {
+    session()->forget('cart');
+
+    return response()->json(['success' => true]);
+})->name('cart.destroy');
+
+Route::get('/cek-status/{id}', [PaymentController::class, 'cekStatus']);
+
+

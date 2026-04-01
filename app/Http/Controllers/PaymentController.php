@@ -25,7 +25,7 @@ class PaymentController extends Controller
                 ->with('error', 'Keranjang kosong.');
         }
 
-        if (!session()->has('customer')) {
+        if (!session()->has('customer_id')) {
             return redirect()->route('Pemesanan')
                 ->with('error', 'Silakan isi data pemesan.');
         }
@@ -38,44 +38,18 @@ class PaymentController extends Controller
         $this->xendit = $xendit;
     }
 
+
     public function createInvoice(Request $request)
     {
-        // dd($request);
-
+        
+        // 1. VALIDASI
         $request->validate([
-            'nama'          => 'required|string|max:100',
-            'email'         => 'required|email',
-            'telepon'       => 'required|string',
+            'nama'    => 'required|string|max:100',
+            'email'   => 'required|email',
+            'telepon' => 'required|string',
         ]);
 
-        session()->put('phone', $request->telepon);
-
-        $meja = session('meja_id');
-
-        // Hitung total dari cart
-        $cart = session('cart', []);
-
-
-        $totalHarga = 0;
-        $totalItem = 0;
-
-        foreach ($cart as $item) {
-            $totalHarga += $item['harga'] * $item['qty'];
-            $totalItem  += $item['qty'];
-        }
-
-        $pesanan = Pesanan::with('customer')
-            ->whereHas('customer', function ($query) use ($request) {
-                $query->where('no_telpon', $request->telepon);
-            })
-            ->where('payment_status', 'unpaid')
-            ->first();
-
-        if ($pesanan) {
-            return redirect(route('riwayat.pesanan'))->with('error', 'Anda sudah memiliki pesanan yang belum dibayar');
-        }
-
-        //simpan data user
+        // 2. AMBIL / BUAT CUSTOMER
         $customer = Customer::firstOrCreate(
             ['no_telpon' => $request->telepon],
             [
@@ -84,44 +58,83 @@ class PaymentController extends Controller
             ]
         );
 
-        // simpan pesanan ke database
-        $pesanan = Pesanan::create([
-            'kode_pesanan'          => 'ORD-' . Str::uuid(),
-            'customer_id'           => $customer->id,
-            'meja_id'               => $meja,
-            'waktu_pesan'           => now(),
-            'payment_status'        => 'unpaid',
-            'catatan'               => 'Test pesanan',
-            'total_harga'           => $totalHarga
+        session([
+            'customer_id' => $customer->id
         ]);
 
-        // simpan order items
+
+        // 3. CEK ORDER PENDING
+        $existingOrder = Pesanan::where('customer_id', $customer->id)
+            ->where('payment_status', 'pending')
+            ->latest()
+            ->first();
+
+        if ($existingOrder) {
+            return redirect()->route('payment.show', $existingOrder->id);
+        }
+
+        // 4. AMBIL CART
+        $cart = session('cart', []);
+
+        if (empty($cart)) {
+            return redirect()->route('Branda')
+                ->with('error', 'Cart kosong');
+        }
+
+
+        // 5. MEJA
+        $meja = session('meja_id');
+
+        if (!$meja) {
+            return redirect('/')
+                ->with('error', 'Meja belum dipilih');
+        }
+
+        // 6. HITUNG TOTAL
+        $totalHarga = 0;
+
+        foreach ($cart as $item) {
+            $totalHarga += $item['harga'] * $item['qty'];
+        }
+
+        // 7. BUAT PESANAN
+        $pesanan = Pesanan::create([
+            'kode_pesanan'   => 'ORD-' . Str::uuid(),
+            'customer_id'    => $customer->id,
+            'meja_id'        => $meja,
+            'waktu_pesan'    => now(),
+            'payment_status' => 'pending',
+            'catatan'        => 'Pesanan dari checkout',
+            'total_harga'    => $totalHarga
+        ]);
+
+        // 8. DETAIL PESANAN
         foreach ($cart as $item) {
             $pesanan->detailPesanans()->create([
-                'pesanan_id'        => $pesanan->id,
-                'menu_id'           => $item['id'],
-                'varian'            => $item['variant'] ?? null,
-                'subtotal'         => $item['harga'] * $item['qty'],
-                'jumlah'            => $item['qty'],
-                'harga'             => $item['harga'],
+                'menu_id'   => $item['id'],
+                'varian'    => $item['varian'] ?? null,
+                'note'      => $item['note'] ?? null,
+                'subtotal'  => $item['harga'] * $item['qty'],
+                'jumlah'    => $item['qty'],
+                'harga'     => $item['harga'],
             ]);
         }
 
-        $pembayarans = (new XenditService())->createQrisTransaction($pesanan);
+        // 9. BUAT INVOICE
 
-        return redirect($pembayarans->invoice_url);
+        $pembayaran = $this->xendit->createQrisTransaction($pesanan);
+
+        return redirect($pembayaran->invoice_url);
     }
 
-    public function success(Request $request)
+    public function success()
     {
-        session()->forget('cart');
-
-        return redirect(route('riwayat.pesananuser'))->with('success', 'Payment success');
+        return redirect()->route('riwayat.pesanan');
     }
 
     public function failed(Request $request)
     {
-        return redirect(route('history.order'))->with('error', 'Payment failed');
+        return redirect(route(''))->with('error', 'Payment failed');
     }
 
     public function payAgain(Pesanan $pesanan)
@@ -135,47 +148,96 @@ class PaymentController extends Controller
         return redirect($pembayarans->invoice_url);
     }
 
+
+    public function show($id)
+    {
+        $pesanan = Pesanan::with(['detailPesanans.menu', 'pembayaran'])
+            ->where('id', $id)
+            ->whereIn('payment_status', ['pending', 'paid'])
+            ->firstOrFail();
+
+        if ($pesanan->payment_status == 'paid') {
+            session()->forget('cart');
+        }
+
+        return view('payment.show', compact('pesanan'));
+    }
+
     public function webhook(Request $request)
-{
-    $data = $request->all();
+    {
 
-    Log::info('Webhook Xendit:', $data);
+        $callbackToken = $request->header('x-callback-token');
 
-    $externalId = $data['external_id'] ?? null;
-    $status     = $data['status'] ?? null;
+        if ($callbackToken !== config('services.xendit.callback_token')) {
+            return response()->json(['message' => 'Invalid token'], 403);
+        }
 
-    Log::info('EXTERNAL ID MASUK: ' . $externalId);
-    
-    if (!$externalId) {
-        return response()->json(['message' => 'external_id tidak ada'], 400);
-    }
+        $data = $request->all();
 
-    $pembayaran = Pembayaran::where('xendit_external_id', $externalId)->first();
+        Log::info('Webhook Xendit:', $data);
 
-    if (!$pembayaran) {
-        return response()->json(['message' => 'Pembayaran tidak ditemukan'], 404);
-    }
+        $externalId = $data['external_id'] ?? null;
+        $status     = $data['status'] ?? null;
 
-    if ($status === 'PAID') {
+        if (!$externalId) {
+            return response()->json(['message' => 'external_id tidak ada'], 400);
+        }
 
-        $pembayaran->transaction_status = 'PAID';
-        $pembayaran->save();
+        $pembayaran = Pembayaran::where('xendit_external_id', $externalId)->first();
 
-        $pesanan = Pesanan::find($pembayaran->pesanan_id);
-        $pesanan->payment_status = 'paid';
-        $pesanan->save();
-    }
-
-    if ($status === 'EXPIRED') {
-
-        $pembayaran->transaction_status = 'EXPIRED';
-        $pembayaran->save();
+        if (!$pembayaran) {
+            return response()->json(['message' => 'Pembayaran tidak ditemukan'], 404);
+        }
 
         $pesanan = Pesanan::find($pembayaran->pesanan_id);
-        $pesanan->payment_status = 'expired';
-        $pesanan->save();
+
+        if (!$pesanan) {
+            Log::error('Pesanan tidak ditemukan', [
+                'pesanan_id' => $pembayaran->pesanan_id
+            ]);
+            return response()->json(['message' => 'Pesanan tidak ditemukan'], 404);
+        }
+
+        if ($status === 'PAID') {
+
+            $pembayaran->update([
+                'transaction_status' => 'PAID',
+                'transaction_time' => isset($data['paid_at'])
+                    ? \Carbon\Carbon::parse($data['paid_at'])
+                    : now()
+            ]);
+
+            $pesanan->update([
+                'payment_status' => 'paid'
+            ]);
+        }
+
+        if ($status === 'EXPIRED') {
+
+            $pembayaran->update([
+                'transaction_status' => 'EXPIRED'
+            ]);
+
+            $pesanan->update([
+                'payment_status' => 'expired'
+            ]);
+        }
+
+        return response()->json(['success' => true]);
     }
 
-    return response()->json(['success' => true]);
-}
+    public function cekStatus($id)
+    {
+        $pesanan = \App\Models\Pesanan::find($id);
+
+        if (!$pesanan) {
+            return response()->json([
+                'status' => 'not_found'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => $pesanan->payment_status
+        ]);
+    }
 }

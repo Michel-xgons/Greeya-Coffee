@@ -10,6 +10,7 @@ class DetailPesanan extends Model
         'pesanan_id',
         'menu_id',
         'varian',
+        'note',
         'jumlah',
         'harga',
         'subtotal',

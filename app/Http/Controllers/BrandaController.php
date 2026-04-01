@@ -6,21 +6,14 @@ namespace App\Http\Controllers;
 use App\Models\Kategoris;
 use App\Models\Menus;
 use Illuminate\Http\Request;
+// use Illuminate\Support\Facades\Log;
 
 class BrandaController extends Controller
 {
     public function index()
-    {
-        $cart = session('cart', []);
-
-        // $total = 0;
-        // foreach ($cart as $item) {
-        //     $total += $item['harga'] * $item['qty'];
-        // }
-
+    {   
         $kategoris = Kategoris::with('menus')->get();
-        // dd($kategoris);
-
+        
         return view(
             'frontend.Menu.Branda',
             [
@@ -29,64 +22,69 @@ class BrandaController extends Controller
         );
     }
 
-    public function cart_add(Request $request)
-    {
-        $menu = Menus::findOrFail($request->id);
+   public function cart_add(Request $request)
+{
+    $request->validate([
+        'id' => 'required|exists:menus,id',
+        'qty' => 'required|integer|min:1|max:100',
+        'note' => 'nullable|string|max:255',
+        'varian' => 'nullable|string|max:100'
+    ]);
 
-        $cart = session('cart', []);
+    $menu = Menus::with('kategori')->findOrFail($request->id);
 
-        $qty     = (int) $request->qty;
-        $varian = trim($request->varian ?? '');
-        $note   = trim($request->note ?? '');
+    $cart = session('cart', []);
 
-        $row_id = md5($menu->id . '-' . $varian);
+    $qty = max(1, (int) $request->qty);
+    $varian = $request->filled('varian') ? trim($request->varian) : null;
+    $note = trim($request->note ?? '');
 
-        if (isset($cart[$row_id])) {
-
-            $cart[$row_id]['qty'] += $qty;
-        } else {
-
-            $cart[$row_id] = [
-                'row_id' => $row_id,
-                'id'      => $menu->id,
-                'nama'    => $menu->nama_menu,
-                'harga'   => $menu->harga,
-                'gambar'  => $menu->gambar,
-                'qty'     => $qty,
-                'varian' => $varian,
-                'note'    => $note,
-            ];
-        }
-
-        session()->put('cart', $cart);
-
-        $total = 0;
-        $html = '';
-
-        foreach ($cart as $item) {
-
-            $subtotal = $item['harga'] * $item['qty'];
-            $total += $subtotal;
-
-            $html = view('frontend.partials.cart_items', [
-                'cart' => $cart
-            ])->render();
-        }
-
+    if (optional($menu->kategori)->nama_kategori === 'Minuman' && !$varian) {
         return response()->json([
-            'success' => true,
-            'html' => $html,
-            'total' => $total,
-            'total_item' => collect($cart)->sum('qty')
-        ]);
+            'success' => false,
+            'message' => 'Pilih varian dulu'
+        ], 422);
     }
+
+    $row_id = md5($menu->id . '-' . $varian . '-' . $note);
+
+    if (isset($cart[$row_id])) {
+        $cart[$row_id]['qty'] += $qty;
+    } else {
+        $cart[$row_id] = [
+            'row_id' => $row_id,
+            'id' => $menu->id,
+            'nama' => $menu->nama_menu,
+            'harga' => $menu->harga,
+            'gambar' => $menu->gambar,
+            'qty' => $qty,
+            'varian' => $varian,
+            'note' => $note,
+        ];
+    }
+
+    session()->put('cart', $cart);
+
+    $total = collect($cart)->sum(fn($item) => $item['harga'] * $item['qty']);
+
+    $html = view('frontend.partials.cart_items', [
+        'cart' => $cart
+    ])->render();
+
+    return response()->json([
+        'success' => true,
+        'html' => $html,
+        'total' => $total,
+        'total_item' => collect($cart)->sum('qty')
+    ]);
+}
 
     public function show($id_menu, Request $request)
     {
         $menu = Menus::findOrFail($id_menu);
 
         $from = $request->query('from');
-        $qty = $request->query('qty', 1);
+        $qty = max(1, (int) $request->query('qty', 1));
 
         return view('frontend.Menu.DetailMenu', compact('menu', 'from', 'qty'));
     }

@@ -5,83 +5,105 @@
 
     <div class="container my-4 pb-5">
         <h4 class="mb-3 text-center">Pesanan Kamu</h4>
-        <div class="row justify-content-center">
-            @foreach ($cart as $item)
-                <div class="col-md-8">
-                    <div class="card mb-3 shadow-sm">
-                        <div class="row g-0 align-items-center">
 
-                            <div class="col-4">
-                                @if (isset($item['gambar']))
-                                    <img src="{{ asset('storage/' . $item['gambar']) }}"
-                                        class="img-fluid rounded-start h-100 object-fit-cover" alt="...">
-                                @endif
-                            </div>
+        @if (empty($cart) || count($cart) == 0)
 
-                            <div class="col-8">
-                                <div class="card-body py-3">
+            <div class="text-center py-5">
+                <p class="text-muted mb-3">Belum ada pesanan</p>
+                <a href="{{ route('Branda') }}" class="btn btn-primary">
+                    Pesan Sekarang
+                </a>
+            </div>
+        @else
+            <div class="row justify-content-center">
+                @foreach ($cart as $item)
+                    <div class="col-12 col-sm-10 col-md-8 col-lg-6" id="item-{{ $item['row_id'] }}">
+                        <div class="card mb-3 shadow-sm border-0 rounded-4" data-harga="{{ $item['harga'] }}">
+                            <div class="row g-0">
 
-                                    <div class="d-flex justify-content-between">
-                                        <h5 class="mb-1">{{ $item['nama'] }}</h5>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <button onclick="removeItem('{{ $item['row_id'] }}')"
-                                                class="btn btn-sm btn-danger">
-                                                Hapus
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-dark"
-                                                onclick="updateQty('{{ $item['row_id'] }}', -1)">−</button>
-                                            <span class="fw-bold">{{ $item['qty'] }}</span>
-                                            <button class="btn btn-sm btn-outline-dark"
-                                                onclick="updateQty('{{ $item['row_id'] }}', 1)">+</button>
-                                        </div>
-                                    </div>
-
-                                    @if (!empty($item['varian']))
-                                        <div class="small text-muted">
-                                            Varian: {{ $item['varian'] }}
-                                        </div>
+                                <div class="col-12 col-md-4">
+                                    @if (isset($item['gambar']))
+                                        <img src="{{ asset('storage/' . $item['gambar']) }}"
+                                            class="img-fluid w-100 h-100 object-fit-cover rounded-start"
+                                            style="max-height: 150px;" alt="...">
                                     @endif
-
-                                    <div class="small text-muted">
-                                        Harga: Rp{{ number_format($item['harga'], 0, ',', '.') }}
-                                    </div>
-
-                                    <div class="fw-semibold mb-2">
-                                        Subtotal: Rp{{ number_format($item['harga'] * $item['qty'], 0, ',', '.') }}
-                                    </div>
-
-                                    @if (!empty($item['note']))
-                                        <div class="small bg-light rounded p-2 mb-2">
-                                            <strong>Catatan:</strong> {{ $item['note'] }}
-                                        </div>
-                                    @endif
-                                    <button class="btn btn-outline-primary btn-sm"
-                                        onclick="openNoteModal('{{ $item['row_id'] }}','{{ $item['note'] ?? '' }}')">
-                                        Tambah Catatan
-                                    </button>
                                 </div>
+
+                                <div class="col-12 col-md-8">
+                                    <div class="card-body py-3">
+
+                                        <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                                            <h5 class="mb-1">{{ $item['nama'] }}</h5>
+                                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                                <button onclick="confirmRemove('{{ $item['row_id'] }}')"
+                                                    class="btn btn-sm btn-outline-danger rounded-circle p-2">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+
+                                                <div class="d-flex align-items-center border rounded-pill px-2">
+                                                    <button class="btn btn-sm border-0 btn-qty"
+                                                        onclick="updateQty('{{ $item['row_id'] }}', -1)">−</button>
+                                                    <span class="px-2 qty">{{ $item['qty'] }}</span>
+                                                    <button class="btn btn-sm border-0 btn-qty"
+                                                        onclick="updateQty('{{ $item['row_id'] }}', 1)">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        @if (!empty($item['varian']))
+                                            <div class="small text-muted">
+                                                Varian: {{ $item['varian'] }}
+                                            </div>
+                                        @endif
+
+                                        <div class="small text-muted">
+                                            Harga: Rp{{ number_format($item['harga'], 0, ',', '.') }}
+                                        </div>
+
+                                        <div class="fw-bold text-dark mb-2 subtotal">
+                                            Subtotal: Rp{{ number_format($item['harga'] * $item['qty'], 0, ',', '.') }}
+                                        </div>
+
+                                        @if (!empty($item['note']))
+                                            <div class="small bg-light rounded p-2 mb-2 note">
+                                                <strong>Catatan:</strong> {{ $item['note'] }}
+                                            </div>
+                                        @endif
+
+                                        <button class="btn btn-outline-primary btn-sm"
+                                            onclick="openNoteModal('{{ $item['row_id'] }}','{{ $item['note'] ?? '' }}')">
+                                            Tambah Catatan
+                                        </button>
+
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
-                </div>
-            @endforeach
-        </div>
+                @endforeach
+            </div>
+
+        @endif
 
 
-        <div class="d-flex justify-content-end mb-4">
-            <a href="{{ route('Branda') }}">
-                <button type="button" class="btn btn-secondary">Tambah Pesanan</button>
-            </a>
-        </div>
+
+        @if (!empty($cart) && count($cart) > 0)
+            <div class="d-flex justify-content-end mb-4">
+                <a href="{{ route('Branda') }}" class="btn btn-outline-secondary">
+                    Tambah Pesanan
+                </a>
+            </div>
+        @endif
 
         <div class="card mb-5 shadow-sm">
             <div class="card-body p-4">
                 <h5 class="fw-bold mb-3">Rincian Pembayaran</h5>
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between mb-2">
                     <span>Subtotal</span>
                     <span id="subtotal">Rp{{ number_format($total, 0, ',', '.') }}</span>
                 </div>
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between mb-2">
                     <span>Biaya lainnya</span>
                     <span id="fee">Rp{{ number_format(4000, 0, ',', '.') }}</span>
                 </div>
@@ -95,8 +117,8 @@
     </div>
 
     <!-- FIXED BOTTOM -->
-    <div class="fixed-bottom bg-white py-3 px-4 border-top shadow-lg">
-        <div class="container d-flex justify-content-between align-items-center">
+    <div class="fixed-bottom bg-white py-3 px-3 border-top shadow-lg">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
             <div>
                 <div class="fw-bold">Total Pembayaran</div>
                 <div id="totalBayar" class="fs-5 text-danger fw-semibold">
@@ -105,7 +127,7 @@
             </div>
             <form action="{{ route('checkout.process') }}" method="POST">
                 @csrf
-                <button type="submit" class="btn btn-dark rounded-pill px-4 fw-bold">
+                <button type="submit" class="btn btn-dark rounded-pill px-4 fw-bold w-100 w-md-auto">
                     Lanjut Pembayaran
                 </button>
             </form>
@@ -127,12 +149,14 @@
                 </div>
 
                 <div class="modal-footer border-0">
-                    <button class="btn btn-warning w-100 fw-bold" onclick="saveNote()">
+                    <button id="btnSaveNote" class="btn btn-warning w-100 fw-bold" onclick="saveNote()">
                         Tambah
                     </button>
                 </div>
             </div>
         </div>
+    </div>
+
     </div>
 
     <script>
@@ -149,13 +173,41 @@
                 })
                 .then(res => res.json())
                 .then(data => {
-                    location.reload()
+
+                    let el = document.getElementById('item-' + row_id);
+                    if (!el) return;
+
+                    el.style.transition = '0.3s';
+                    el.style.opacity = 0;
+
+                    setTimeout(() => {
+                        el.remove();
+                        updateTotal();
+
+                        if (document.querySelectorAll('[data-harga]').length === 0) {
+                            location.reload();
+                        }
+                    }, 300);
+
                 })
+                .catch(err => {
+                    console.error('Error remove:', err);
+                    showAlert('Gagal menghapus item', 'error');
+                });
         }
     </script>
 
     <script>
         function updateQty(row_id, change) {
+
+            let item = document.getElementById('item-' + row_id);
+            if (!item) return;
+
+            let qtyEl = item.querySelector('.qty');
+            let currentQty = parseInt(qtyEl.innerText);
+
+            if (currentQty + change < 1) return;
+
             fetch("{{ route('cart.update') }}", {
                     method: "POST",
                     headers: {
@@ -170,9 +222,71 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        location.reload();
+
+                        let subtotalEl = item.querySelector('.subtotal');
+                        let harga = parseInt(item.querySelector('.card').dataset.harga);
+
+                        let newQty = currentQty + change;
+                        // animasi keluar
+                        qtyEl.classList.add('qty-animate');
+
+                        // delay sedikit biar efek terasa
+                        setTimeout(() => {
+                            qtyEl.innerText = newQty;
+
+                            // animasi masuk balik normal
+                            qtyEl.classList.remove('qty-animate');
+                        }, 100);
+
+                        let qtyButtons = item.querySelectorAll('.btn-qty');
+
+                        qtyButtons.forEach(btn => {
+                            btn.disabled = true;
+                            btn.style.opacity = 0.5;
+                        });
+
+                        setTimeout(() => {
+                            qtyButtons.forEach(btn => {
+                                btn.disabled = false;
+                                btn.style.opacity = 1;
+                            });
+                        }, 300);
+
+                        let subtotal = harga * newQty;
+                        subtotalEl.classList.add('fade-update');
+
+                        setTimeout(() => {
+                            subtotalEl.innerText = 'Subtotal: Rp' + subtotal.toLocaleString('id-ID');
+                            subtotalEl.classList.remove('fade-update');
+                        }, 100);
+
+                        updateTotal();
                     }
+                })
+                .catch(err => {
+                    console.error('Error update qty:', err);
+                    showAlert('Gagal update jumlah', 'error');
                 });
+        }
+    </script>
+
+    <script>
+        function updateTotal() {
+            let total = 0;
+
+            document.querySelectorAll('[data-harga]').forEach(card => {
+                let harga = parseInt(card.dataset.harga) || 0;
+                let qty = parseInt(card.querySelector('.qty').innerText);
+
+                total += harga * qty;
+            });
+
+            let fee = 4000;
+            let grandTotal = total + fee;
+
+            document.getElementById('subtotal').innerText = 'Rp' + total.toLocaleString('id-ID');
+            document.getElementById('grandTotal').innerText = 'Rp' + grandTotal.toLocaleString('id-ID');
+            document.getElementById('totalBayar').innerText = 'Rp' + grandTotal.toLocaleString('id-ID');
         }
     </script>
 
@@ -187,6 +301,11 @@
         function saveNote() {
             let id = document.getElementById('noteItemId').value;
             let note = document.getElementById('noteTextarea').value;
+
+            let btn = document.getElementById('btnSaveNote');
+            btn.disabled = true;
+            btn.innerHTML = 'Menyimpan...';
+
             fetch("{{ route('cart.note') }}", {
                     method: "POST",
                     headers: {
@@ -200,8 +319,83 @@
                 })
                 .then(res => res.json())
                 .then(() => {
-                    location.reload();
+
+                    let item = document.getElementById('item-' + id);
+                    if (!item) return;
+
+                    let existingNote = item.querySelector('.note');
+
+                    if (note.trim() === '') {
+                        if (existingNote) existingNote.remove();
+                    } else {
+                        if (existingNote) {
+                            existingNote.innerHTML = '<strong>Catatan:</strong> ' + note;
+                        } else {
+                            let noteDiv = document.createElement('div');
+                            noteDiv.className = 'small bg-light rounded p-2 mb-2 note';
+                            noteDiv.innerHTML = '<strong>Catatan:</strong> ' + note;
+
+                            let btnNote = item.querySelector('.btn-outline-primary');
+                            btnNote.parentNode.insertBefore(noteDiv, btnNote);
+                        }
+                    }
+
+                    let modalEl = document.getElementById('noteModal');
+                    let modal = bootstrap.Modal.getInstance(modalEl);
+                    modal.hide();
+
+                    showAlert('Catatan berhasil disimpan', 'success');
+
+                    btn.disabled = false;
+                    btn.innerHTML = 'Tambah';
+                })
+                .catch(err => {
+                    console.error('Error save note:', err);
+                    showAlert('Gagal menyimpan catatan', 'error');
+
+                    btn.disabled = false;
+                    btn.innerHTML = 'Tambah';
                 });
+        }
+    </script>
+
+    <script>
+        function confirmRemove(row_id) {
+            Swal.fire({
+                title: 'Hapus item?',
+                text: 'Pesanan ini akan dihapus dari keranjang',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Hapus',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    removeItem(row_id);
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Terhapus',
+                        text: 'Item berhasil dihapus',
+                        timer: 1200,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+    </script>
+
+    <script>
+        function showAlert(message, type = 'success') {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: type,
+                title: message,
+                showConfirmButton: false,
+                timer: 2000,
+            });
         }
     </script>
 
