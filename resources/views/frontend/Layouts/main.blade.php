@@ -15,149 +15,112 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
+@php
+    $cart = session('cart', []);
+    $total_item = collect($cart)->sum('qty');
+    $total = collect($cart)->sum(function($item) {
+        return $item['harga'] * $item['qty'];
+    });
+@endphp
+
 <body>
+
 
     {{-- Header --}}
     <header class="position-relative">
-        <div class="bg-secondary py-3 text-center position-relative">
-            <img src="{{ asset('images/Logo.png') }}" style="width:200px; height:100px; object-fit:contain;">
-            <div class="position-absolute top-0 end-0 d-flex gap-2 m-2">
+        <div class="position-relative py-2 px-3 d-flex align-items-center justify-content-end shadow-sm"
+            style="background:#3E2723;">
 
-                <div class="d-flex align-items-center gap-2">
-                    <input type="text" id="searchBox" class="form-control d-none" placeholder="Cari menu...">
-                    <button id="btnSearch" class="btn btn-light rounded-circle p-2 shadow-sm">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
+            <!-- Logo -->
+            <div class="position-absolute top-50 start-50 translate-middle">
+                <img src="{{ asset('images/Logo.png') }}" class="img-fluid"
+                    style="max-height:70px; object-fit:contain;">
+            </div>
+
+            <!-- Right Menu -->
+            <div class="d-flex align-items-center gap-2 position-relative">
+
+                <input id="searchBox" class="form-control position-absolute top-100 end-0 mt-2 shadow"
+                    style="width:250px; display:none; z-index:999;" placeholder="Cari menu..." autocomplete="off">
+
+                <button id="btnSearch" class="btn btn-light rounded-circle p-2 shadow-sm">
+                    <i class="fas fa-search fs-5"></i>
+                </button>
 
                 <button class="btn btn-light rounded-circle p-2 shadow-sm" data-bs-toggle="offcanvas"
                     data-bs-target="#offcanvasMenu">
-                    <i class="fas fa-bars"></i>
+                    <i class="fas fa-bars fs-5"></i>
                 </button>
 
-
-                <!-- Tombol Keranjang -->
+                <!-- Cart -->
                 <div class="position-relative">
-
                     <button class="btn btn-light rounded-circle p-2 shadow-sm" data-bs-toggle="modal"
                         data-bs-target="#checkoutModal">
-
-                        <i class="fas fa-shopping-cart"></i>
-
+                        <i class="fas fa-shopping-cart fs-5"></i>
                     </button>
 
                     <span id="cartCount"
-                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-
-                        @php
-                            $cart = session('cart', []);
-                            $total_item = collect($cart)->sum('qty');
-                        @endphp
-
+                        class="position-absolute top-0 end-0 translate-middle badge rounded-pill bg-danger">
                         {{ $total_item }}
-
                     </span>
-
                 </div>
 
-                <!-- Modal Checkout -->
-                <div class="modal fade" id="checkoutModal" tabindex="-1">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-
-                            <div class="modal-header">
-                                <h5 class="modal-title">Ringkasan Pesanan</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-
-
-                            <div class="modal-body">
-
-                                <div id="cartItems">
-
-                                    @php
-                                        $cart = session('cart', []);
-                                        $total = 0;
-                                    @endphp
-
-                                    @forelse($cart as $item)
-                                        @php
-                                            $subtotal = $item['harga'] * $item['qty'];
-                                            $total += $subtotal;
-                                        @endphp
-
-                                        <div
-                                            class="d-flex justify-content-between align-items-center border-bottom py-2">
-
-                                            <div class="text-start">
-
-                                                <strong>
-                                                    {{ $item['nama'] }}
-                                                    @if (!empty($item['varian']))
-                                                        ({{ $item['varian'] }})
-                                                    @endif
-                                                </strong>
-
-                                                <br>
-
-                                                <small class="text-muted">
-                                                    {{ $item['qty'] }} x Rp
-                                                    {{ number_format($item['harga'], 0, ',', '.') }}
-                                                </small>
-
-                                            </div>
-
-                                            <div class="fw-bold">
-
-                                                Rp {{ number_format($subtotal, 0, ',', '.') }}
-
-                                            </div>
-
-                                        </div>
-
-                                    @empty
-
-                                        <div class="text-center text-muted py-3">
-                                            Keranjang masih kosong
-                                        </div>
-                                    @endforelse
-
-                                </div>
-
-                                <hr>
-
-                                <div class="d-flex justify-content-between">
-
-                                    <strong>Total</strong>
-
-                                    <strong id="modalTotal" class="text-success">
-
-                                        Rp {{ number_format($total, 0, ',', '.') }}
-
-                                    </strong>
-
-                                </div>
-
-                            </div>
-
-                            <div class="modal-footer">
-                                <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-
-                                <a href="{{ route('checkout') }}" class="btn btn-primary">
-                                    Checkout
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
+
+
     </header>
 
     {{-- Konten utama tiap halaman --}}
-    <main class="container py-4">
+    <main class="container-fluid px-3 py-4">
         @yield('content')
     </main>
+
+    <!-- Modal Checkout -->
+    <div class="modal fade" id="checkoutModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Ringkasan Pesanan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+
+                <div class="modal-body">
+
+                    <div id="cartItems">
+                        <div class="text-center text-muted py-3">
+                            Loading...
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between">
+
+                        <strong>Total</strong>
+
+                        <strong id="modalTotal" class="text-success">
+
+                            Rp {{ number_format($total, 0, ',', '.') }}
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+
+                    <a href="{{ route('checkout') }}" class="btn btn-primary">
+                        Checkout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="offcanvas offcanvas-start" id="offcanvasMenu">
         <div class="offcanvas-header">
@@ -166,10 +129,19 @@
         </div>
 
         <div class="offcanvas-body">
-            <ul class="list-unstyled">
-                <li><a href="#">Semua</a></li>
-                <li><a href="#">Makanan</a></li>
-                <li><a href="#">Minuman</a></li>
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <a href="{{ route('Branda') }}" class="text-decoration-none text-dark d-block">
+                        Halaman Beranda
+                    </a>
+                </li>
+
+                <li class="list-group-item">
+                    <a href="{{ route('riwayat') }}" class="text-decoration-none text-dark d-block">
+                        Halaman Riwayat pesanan
+                    </a>
+                </li>
+
             </ul>
         </div>
     </div>
@@ -182,66 +154,151 @@
 
             const btnSearch = document.getElementById('btnSearch');
             const searchBox = document.getElementById('searchBox');
+            const checkoutModal = document.getElementById('checkoutModal');
+            const cartBtn = document.querySelector('[data-bs-target="#checkoutModal"]');
+
+            let isOpen = false;
+            let timeout = null;
 
             // 🔍 TOGGLE SEARCH
-            btnSearch.addEventListener('click', function() {
-                searchBox.classList.toggle('d-none');
+            if (btnSearch && searchBox) {
 
-                if (!searchBox.classList.contains('d-none')) {
-                    searchBox.focus();
-                } else {
-                    searchBox.value = '';
-                    resetItems();
-                }
-            });
+                btnSearch.addEventListener('click', function() {
+                    isOpen = !isOpen;
 
-            // 🔎 FILTER MENU
-            searchBox.addEventListener('input', function() {
-
-                let keyword = this.value.toLowerCase();
-
-                document.querySelectorAll('.product-item').forEach(item => {
-
-                    let nama = item.querySelector('h6')?.innerText.toLowerCase() || '';
-                    let col = item.closest('[class^="col"]');
-
-                    if (!col) return;
-
-                    if (keyword === '') {
-                        col.style.display = '';
+                    if (isOpen) {
+                        searchBox.style.display = 'block';
+                        searchBox.focus();
                     } else {
-                        col.style.display = nama.includes(keyword) ? '' : 'none';
+                        searchBox.style.display = 'none';
+                        searchBox.value = '';
+                        resetItems();
                     }
-
                 });
 
-            });
+                // 🔎 SEARCH (FETCH)
+                searchBox.addEventListener('input', function() {
+                    let keyword = this.value;
 
-            // 🔄 RESET
-            function resetItems() {
-                document.querySelectorAll('.product-item').forEach(item => {
-                    let col = item.closest('[class^="col"]');
-                    if (col) col.style.display = '';
+                    clearTimeout(timeout);
+
+                    timeout = setTimeout(() => {
+
+                        if (keyword.length < 1) {
+                            resetItems();
+                            return;
+                        }
+
+                        fetch(`/search-menu?keyword=${encodeURIComponent(keyword)}`)
+                            .then(res => res.json())
+                            .then(data => {
+
+                                let container = document.getElementById('menuContainer');
+                                if (!container) return;
+
+                                container.innerHTML = '';
+
+                                if (data.length === 0) {
+                                    container.innerHTML =
+                                        `<p class="text-center">Menu tidak ditemukan</p>`;
+                                    return;
+                                }
+
+                                data.forEach(menu => {
+                                    container.innerHTML += `
+                                <div class="col-md-3 product-item">
+                                    <div class="card p-2">
+                                        <h6>${menu.nama}</h6>
+                                        <p>Rp ${menu.harga}</p>
+                                    </div>
+                                </div>
+                            `;
+                                });
+
+                            })
+                            .catch(() => {
+                                console.log('Error fetch search');
+                            });
+
+                    }, 300);
                 });
             }
 
-        }); // ✅ INI YANG KAMU KURANGIN
+            // 🔄 RESET
+            function resetItems() {
+                fetch(`/search-menu?keyword=`)
+                    .then(res => res.json())
+                    .then(data => {
+
+                        let container = document.getElementById('menuContainer');
+                        if (!container) return;
+
+                        container.innerHTML = '';
+
+                        data.forEach(menu => {
+                            container.innerHTML += `
+                        <div class="col-md-3 product-item">
+                            <div class="card p-2">
+                                <h6>${menu.nama}</h6>
+                                <p>Rp ${menu.harga}</p>
+                            </div>
+                        </div>
+                    `;
+                        });
+
+                    });
+            }
+
+            // ✅ FIX MODAL FOCUS
+            if (checkoutModal) {
+                checkoutModal.addEventListener('hidden.bs.modal', function() {
+                    if (cartBtn) {
+                        cartBtn.focus();
+                    }
+                });
+            }
+
+            // ✅ AUTO CLOSE SEARCH
+            document.addEventListener('click', function(e) {
+                if (
+                    btnSearch &&
+                    searchBox &&
+                    !btnSearch.contains(e.target) &&
+                    !searchBox.contains(e.target)
+                ) {
+                    searchBox.style.display = 'none';
+                    isOpen = false;
+                }
+            });
+
+            // ✅ LOAD CART SAAT MODAL DIBUKA
+            if (checkoutModal) {
+                checkoutModal.addEventListener('shown.bs.modal', function() {
+
+                    fetch('/cart', {
+                            credentials: 'same-origin'
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+
+                            const cartItems = document.getElementById('cartItems');
+                            const modalTotal = document.getElementById('modalTotal');
+
+                            if (cartItems) {
+                                cartItems.innerHTML = data.html;
+                            }
+
+                            if (modalTotal) {
+                                modalTotal.innerText =
+                                    "Rp " + Number(data.total).toLocaleString('id-ID');
+                            }
+
+                        });
+
+                });
+            }
+        });
     </script>
-
-
-
-    <!--Validasi-->
-    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999">
-        <div id="cartToast" class="toast align-items-center text-bg-success border-0" role="alert">
-            <div class="d-flex">
-                <div class="toast-body" id="toastMessage">
-                    Menu berhasil ditambahkan
-                </div>
-
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        </div>
-    </div>
 
 </body>
 

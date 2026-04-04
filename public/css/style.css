@@ -27,3 +27,49 @@
     transform: scale(1.2);
     transition: 0.15s;
 }
+
+/* Smooth UI */
+body {
+    background-color: #f8f9fa;
+}
+
+/* Card feel */
+.card {
+    transition: 0.2s;
+}
+
+.card:hover {
+    transform: scale(1.02);
+}
+
+/* Button feel */
+.btn {
+    transition: 0.2s;
+}
+
+.search-box {
+    width: 250px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.search-box.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.search-wrapper {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: white;
+    padding: 10px;
+    display: none;
+    z-index: 999;
+}
+
+.search-wrapper.active {
+    display: block;
+}

@@ -23,6 +23,9 @@ Route::prefix('cart')->group(function () {
         ->name('cart.note');
 });
 
+Route::get('/cart', [CheckOutController::class, 'cart'])
+    ->name('cart.get');
+
 Route::post('/cart/update', [CheckOutController::class, 'update'])
     ->name('cart.update');
 
@@ -61,4 +64,6 @@ Route::post('/cart/destroy', function () {
 
 Route::get('/cek-status/{id}', [PaymentController::class, 'cekStatus']);
 
+Route::get('/riwayat', [RiwayatPesananController::class, 'index'])->name('riwayat');
 
+Route::get('/search-menu', [BrandaController::class, 'search'])->name('search.menu');

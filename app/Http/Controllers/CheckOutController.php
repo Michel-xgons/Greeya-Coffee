@@ -25,9 +25,19 @@ class CheckOutController extends Controller
 
 
     public function get()
-    {
-        return response()->json(session('cart', []));
-    }
+{
+    $cart = session('cart', []);
+
+    $total = collect($cart)->sum(function ($item) {
+        return $item['harga'] * $item['qty'];
+    });
+
+    return response()->json([
+        'cart' => $cart,
+        'total' => $total,
+        'html' => view('frontend.partials.cart_items', compact('cart'))->render()
+    ]);
+}
 
     public function update(Request $request)
     {
@@ -135,4 +145,21 @@ class CheckOutController extends Controller
 
         return redirect()->route('payment');
     }
+
+    public function cart()
+{
+    $cart = session('cart', []);
+
+    $total = collect($cart)->sum(function($item) {
+        return $item['harga'] * $item['qty'];
+    });
+
+    $html = view('frontend.cart.items', compact('cart'))->render();
+
+    return response()->json([
+        'html' => $html,
+        'total' => $total,
+        'total_item' => collect($cart)->sum('qty')
+    ]);
+}
 }

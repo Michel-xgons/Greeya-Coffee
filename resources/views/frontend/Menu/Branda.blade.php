@@ -23,89 +23,79 @@
             <i class="fas fa-chair me-1 text-warning"></i>
             Nomor Meja:
             <span class="fw-bold">{{ session('nomor_meja') }}</span>
-            {{-- <span class="fw-bold">Menyesuaikan No Meja</span> --}}
         </div>
     @endif
 
+    {{-- ================= TAB NAV ================= --}}
     <nav>
-        <div class="nav nav-tabs col-sm-12" id="nav-tab" role="tablist">
-
+        <div class="nav nav-tabs" id="nav-tab" role="tablist">
             @foreach ($kategoris as $kategori)
-                <a class="nav-link fs-6 {{ $loop->first ? 'active' : '' }}" id="nav-{{ $kategori->id }}-tab"
-                    data-bs-toggle="tab" data-bs-target="#nav-{{ $kategori->id }}" role="tab"
-                    aria-controls="nav-{{ $kategori->id }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}">
+                <a class="nav-link {{ $loop->first ? 'active' : '' }}" id="nav-{{ $kategori->id }}-tab" data-bs-toggle="tab"
+                    href="#nav-{{ $kategori->id }}" role="tab">
 
                     {{ $kategori->nama_kategori }}
-
                 </a>
             @endforeach
-
-
         </div>
     </nav>
 
-    <div class="tab-content" id="nav-tabContent">
+    {{-- ================= ERROR ================= --}}
+    @if ($errors->any())
+        <div class="alert alert-danger mt-3">
+            @foreach ($errors->all() as $error)
+                <p class="mb-0">Warning! {{ $error }}</p>
+            @endforeach
+        </div>
+    @endif
 
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                @foreach ($errors->all() as $error)
-                    <p class="mb-0">Warning! {{ $error }}</p>
-                @endforeach
-            </div>
-        @endif
-
+    {{-- ================= TAB CONTENT ================= --}}
+    <div class="tab-content mt-3">
         @foreach ($kategoris as $kategori)
-            <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="nav-{{ $kategori->id }}" role="tabpanel"
-                aria-labelledby="nav-{{ $kategori->id }}-tab">
+            <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="nav-{{ $kategori->id }}" role="tabpanel">
 
                 @if ($kategori->menus->count() > 0)
-                    <div class="row mt-4">
+                    <div class="row">
 
                         @foreach ($kategori->menus as $item)
                             <div class="col-6 col-md-6 col-lg-4 mb-4">
-                                <div class="card h-100 shadow-sm border-0 rounded-4">
-                                    <div class="card-body product-item py-3">
 
-                                        <figure>
-                                            <a href="{{ route('detail.menu', $item->id) }}">
+                                <div class="card product-card h-100 shadow-sm border-0 rounded-4">
+                                    <div class="card-body py-3">
 
-                                                <img src="{{ asset('storage/' . $item->gambar) }}"
-                                                    class="w-100 object-fit-cover rounded-top" style="height: 180px;">
-                                            </a>
-                                        </figure>
+                                        <a href="{{ route('detail.menu', $item->id) }}">
+                                            <img src="{{ asset('storage/' . $item->gambar) }}"
+                                                class="w-100 object-fit-cover rounded-top mb-2" style="height: 180px;">
+                                        </a>
 
-                                        <h6 class="fw-semibold mb-1">{{ $item->nama_menu }}</h6>
+                                        <h6 class="fw-semibold mb-1">
+                                            {{ $item->nama_menu }}
+                                        </h6>
 
                                         <div class="fw-bold text-dark mb-2">
-                                            {{ 'Rp.' . number_format($item->harga) }}
+                                            Rp {{ number_format($item->harga) }}
                                         </div>
 
-                                        @if (optional($kategori)->nama_kategori == 'Minuman')
+                                        {{-- ================= MINUMAN ================= --}}
+                                        @if (strtolower(trim($kategori->nama_kategori)) == 'minuman')
                                             <div class="d-flex align-items-center justify-content-between mb-3 mt-3">
-
                                                 <div class="d-flex align-items-center border rounded-pill px-2">
-
                                                     <button type="button" class="btn btn-sm border-0"
-                                                        onclick="changeQty(this, -1)">
-                                                        −
-                                                    </button>
+                                                        onclick="changeQty(this, -1)">−</button>
 
                                                     <input type="number" value="1" name="qty" min="1"
                                                         class="border-0 text-center" style="width:30px">
 
                                                     <button type="button" class="btn btn-sm border-0"
-                                                        onclick="changeQty(this, 1)">
-                                                        +
-                                                    </button>
-
+                                                        onclick="changeQty(this, 1)">+</button>
                                                 </div>
-
                                             </div>
 
                                             <a href="{{ route('detail.menu', $item->id) }}"
-                                                class="col-12 btn btn-dark rounded-pill w-100 fw-semibold go-detail">
+                                                class="btn btn-dark rounded-pill w-100 fw-semibold go-detail">
                                                 Tambah
                                             </a>
+
+                                            {{-- ================= MAKANAN ================= --}}
                                         @else
                                             <form action="{{ route('cart.add') }}" method="POST" class="cart-form">
                                                 @csrf
@@ -114,101 +104,93 @@
                                                 <input type="hidden" name="nama" value="{{ $item->nama_menu }}">
                                                 <input type="hidden" name="harga" value="{{ $item->harga }}">
 
-                                                <div>
-                                                    <div
-                                                        class="d-flex align-items-center justify-content-between mb-3 mt-3">
+                                                <div class="d-flex align-items-center justify-content-between mb-3 mt-3">
+                                                    <div class="d-flex align-items-center border rounded-pill px-2">
 
-                                                        <div class="d-flex align-items-center border rounded-pill px-2">
+                                                        <button type="button" class="btn btn-sm border-0"
+                                                            onclick="changeQty(this, -1)">−</button>
 
-                                                            <button type="button" class="btn btn-sm border-0"
-                                                                onclick="changeQty(this, -1)">
-                                                                −
-                                                            </button>
+                                                        <input type="number" value="1" name="qty" min="1"
+                                                            class="border-0 text-center" style="width:30px">
 
-                                                            <input type="number" value="1" name="qty"
-                                                                min="1" class="border-0 text-center"
-                                                                style="width:30px">
-
-                                                            <button type="button" class="btn btn-sm border-0"
-                                                                onclick="changeQty(this, 1)">
-                                                                +
-                                                            </button>
-
-                                                        </div>
-
-                                                        {{-- <small>Max:10</small> --}}
+                                                        <button type="button" class="btn btn-sm border-0"
+                                                            onclick="changeQty(this, 1)">+</button>
                                                     </div>
-                                                    <button type="submit"
-                                                        class="col-12 btn btn-dark rounded-pill w-100 fw-semibold">
-                                                        Tambah
-                                                    </button>
-
                                                 </div>
+
+                                                <button type="submit" class="btn btn-dark rounded-pill w-100 fw-semibold">
+                                                    Tambah
+                                                </button>
                                             </form>
                                         @endif
 
                                     </div>
-
                                 </div>
+
                             </div>
                         @endforeach
 
                     </div>
                 @else
-                    <div class="col mb-5 mt-5">
-                        <div class="text-center mt-5">
-                            <img src="{{ asset('images/notfound.png') }}" width="10%" alt="not found">
-                            <h6 class="text-muted mt-3">
-                                <b>Tidak ditemukan!</b>
-                            </h6>
-                        </div>
+                    <div class="text-center mt-5">
+                        <img src="{{ asset('images/notfound.png') }}" width="80" alt="not found">
+                        <h6 class="text-muted mt-3">
+                            <b>Tidak ditemukan!</b>
+                        </h6>
                     </div>
                 @endif
+
             </div>
         @endforeach
     </div>
 
+    {{-- ================= JS ================= --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            if (typeof Swal === 'undefined') {
-                console.error('SweetAlert2 not loaded!');
-                return;
-            }
 
+            // go detail + qty
             document.querySelectorAll('.go-detail').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();
-                    const card = this.closest('.product-item');
+
+                    const card = this.closest('.product-card');
+                    if (!card) return;
+
                     const qtyInput = card.querySelector('input[name="qty"]');
                     const qty = qtyInput ? qtyInput.value : 1;
+
                     const url = new URL(this.href);
                     url.searchParams.set('qty', qty);
+
                     window.location.href = url.toString();
                 });
             });
 
+            // add to cart AJAX
             document.querySelectorAll('.cart-form').forEach(form => {
                 form.addEventListener('submit', function(e) {
                     e.preventDefault();
 
                     const btn = form.querySelector('button[type="submit"]');
                     btn.disabled = true;
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menambahkan...';
-
-                    const formData = new FormData(form);
+                    btn.innerHTML = 'Loading...';
 
                     fetch(form.action, {
                             method: 'POST',
-                            body: formData, // FormData sudah include CSRF
+                            body: new FormData(form),
                             credentials: 'same-origin'
                         })
                         .then(async res => {
-                            const data = await res.json();
+                            let data;
+
+                            try {
+                                data = await res.json();
+                            } catch {
+                                throw new Error('Response bukan JSON');
+                            }
 
                             if (!res.ok) {
-                                const errorMsg = data.message || data.error ||
-                                    'Terjadi kesalahan server';
-                                throw new Error(errorMsg);
+                                throw new Error(data.message || 'Server error');
                             }
 
                             return data;
@@ -222,19 +204,24 @@
                                     timer: 1500,
                                     showConfirmButton: false
                                 });
-
-                                // Update cart UI
                                 updateCartUI(data);
+
+                                const cartItems = document.getElementById('cartItems');
+                                const modalTotal = document.getElementById('modalTotal');
+
+                                if (data.html) {
+                                    document.getElementById('cartItems').innerHTML = data.html;
+                                }
+
+                                if (data.total) {
+                                    document.getElementById('modalTotal').innerText =
+                                        "Rp " + Number(data.total).toLocaleString('id-ID');
+                                }
                             }
                         })
                         .catch(err => {
-                            console.error('Cart error:', err);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Gagal!',
-                                text: err.message ||
-                                    'Terjadi kesalahan saat menambahkan ke keranjang'
-                            });
+                            console.error(err);
+                            alert(err.message);
                         })
                         .finally(() => {
                             btn.disabled = false;
@@ -246,24 +233,15 @@
 
         function updateCartUI(data) {
             const cartCount = document.getElementById('cartCount');
-            const cartItems = document.getElementById('cartItems');
-            const modalTotal = document.getElementById('modalTotal');
-
             if (cartCount) cartCount.innerText = data.total_item;
-            if (cartItems) cartItems.innerHTML = data.html;
-            if (modalTotal) modalTotal.innerText = "Rp " + data.total.toLocaleString('id-ID');
         }
-    </script>
 
-    <script>
         function changeQty(btn, change) {
             let input = btn.parentElement.querySelector('input[name="qty"]');
             if (!input) return;
 
             let val = parseInt(input.value) || 1;
-
-            if (change < 0 && val <= 1) return; // Min 1
-            if (val + change < 1) return;
+            if (change < 0 && val <= 1) return;
 
             input.value = val + change;
         }

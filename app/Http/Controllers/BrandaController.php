@@ -13,7 +13,7 @@ class BrandaController extends Controller
     public function index()
     {   
         $kategoris = Kategoris::with('menus')->get();
-        
+
         return view(
             'frontend.Menu.Branda',
             [
@@ -39,14 +39,14 @@ class BrandaController extends Controller
     $varian = $request->filled('varian') ? trim($request->varian) : null;
     $note = trim($request->note ?? '');
 
-    if (optional($menu->kategori)->nama_kategori === 'Minuman' && !$varian) {
+    if (strtolower(optional($menu->kategori)->nama_kategori) === 'minuman' && !$varian) {
         return response()->json([
             'success' => false,
             'message' => 'Pilih varian dulu'
         ], 422);
     }
 
-    $row_id = md5($menu->id . '-' . $varian . '-' . $note);
+    $row_id = md5($menu->id . '-' . strtolower($varian) . '-' . strtolower($note));
 
     if (isset($cart[$row_id])) {
         $cart[$row_id]['qty'] += $qty;
@@ -67,15 +67,11 @@ class BrandaController extends Controller
 
     $total = collect($cart)->sum(fn($item) => $item['harga'] * $item['qty']);
 
-    $html = view('frontend.partials.cart_items', [
-        'cart' => $cart
-    ])->render();
-
     return response()->json([
         'success' => true,
-        'html' => $html,
+        'total_item' => collect($cart)->sum('qty'),
         'total' => $total,
-        'total_item' => collect($cart)->sum('qty')
+        'html' => view('frontend.partials.cart_items', compact('cart'))->render()
     ]);
 }
 
@@ -88,4 +84,13 @@ class BrandaController extends Controller
 
         return view('frontend.Menu.DetailMenu', compact('menu', 'from', 'qty'));
     }
+
+    public function search(Request $request)
+{
+    $keyword = $request->keyword;
+
+    $menus = Menus::where('nama', 'like', "%{$keyword}%")->get();
+
+    return response()->json($menus);
+}
 }
