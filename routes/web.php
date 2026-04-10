@@ -67,3 +67,11 @@ Route::get('/cek-status/{id}', [PaymentController::class, 'cekStatus']);
 Route::get('/riwayat', [RiwayatPesananController::class, 'index'])->name('riwayat');
 
 Route::get('/search-menu', [BrandaController::class, 'search'])->name('search.menu');
+
+
+Route::post('/cart/delete', [BrandaController::class, 'cart_delete'])->name('cart.delete');
+
+Route::get('/pesan-lagi', function () {
+    session()->forget('cart');
+    return redirect()->route('Branda');
+})->name('pesan.lagi');

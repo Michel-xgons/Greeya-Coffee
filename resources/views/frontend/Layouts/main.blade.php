@@ -18,7 +18,7 @@
 @php
     $cart = session('cart', []);
     $total_item = collect($cart)->sum('qty');
-    $total = collect($cart)->sum(function($item) {
+    $total = collect($cart)->sum(function ($item) {
         return $item['harga'] * $item['qty'];
     });
 @endphp
@@ -82,42 +82,43 @@
             <div class="modal-content">
 
                 <div class="modal-header">
-                    <h5 class="modal-title">Ringkasan Pesanan</h5>
+                    <h5 class="modal-title fw-bold">🛒 Ringkasan Pesanan</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
-
                 <div class="modal-body">
 
+                    <!-- Cart Items -->
                     <div id="cartItems">
-                        <div class="text-center text-muted py-3">
-                            Loading...
+                        <div class="text-center text-muted py-4">
+                            <div class="spinner-border spinner-border-sm mb-2"></div>
+                            <div>Memuat pesanan...</div>
                         </div>
                     </div>
 
                     <hr>
 
-                    <div class="d-flex justify-content-between">
+                    <!-- Total -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-semibold">Total</span>
 
-                        <strong>Total</strong>
-
-                        <strong id="modalTotal" class="text-success">
-
-                            Rp {{ number_format($total, 0, ',', '.') }}
-
-                        </strong>
-
+                        <span id="modalTotal" class="fw-bold text-success fs-5">
+                            Rp 0
+                        </span>
                     </div>
 
                 </div>
 
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        Tutup
+                    </button>
 
-                    <a href="{{ route('checkout') }}" class="btn btn-primary">
+                    <a href="{{ route('checkout') }}" class="btn btn-primary fw-semibold">
                         Checkout
                     </a>
                 </div>
+
             </div>
         </div>
     </div>
@@ -260,6 +261,10 @@
 
             // ✅ AUTO CLOSE SEARCH
             document.addEventListener('click', function(e) {
+
+                // ❗ JANGAN ganggu form submit
+                if (e.target.closest('form')) return;
+
                 if (
                     btnSearch &&
                     searchBox &&
@@ -297,6 +302,89 @@
 
                 });
             }
+        });
+    </script>
+
+    <script>
+        document.querySelector('#checkoutModal')?.addEventListener('click', function(e) {
+
+            // ➕➖ QTY
+            if (e.target.classList.contains('qty-btn')) {
+
+                fetch("{{ route('cart.update') }}", {
+                        method: "POST",
+                        headers: {
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            row_id: e.target.dataset.id,
+                            action: e.target.dataset.action
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        document.getElementById('cartItems').innerHTML = data.html;
+                        document.getElementById('modalTotal').innerText =
+                            "Rp " + data.total.toLocaleString('id-ID');
+                        document.getElementById('cartCount').innerText = data.total_item;
+                    });
+            }
+
+            //  DELETE
+            const deleteBtn = e.target.closest('.delete-btn');
+
+            if (deleteBtn) {
+
+                Swal.fire({
+                    title: 'Hapus item?',
+                    text: 'Item akan dihapus dari keranjang',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Hapus',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+
+                    if (result.isConfirmed) {
+
+                        fetch("{{ route('cart.delete') }}", {
+                                method: "POST",
+                                headers: {
+                                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')
+                                        .content,
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify({
+                                    row_id: deleteBtn.dataset.id
+                                })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+
+                                document.getElementById('cartItems').innerHTML = data.html;
+                                document.getElementById('modalTotal').innerText =
+                                    "Rp " + data.total.toLocaleString('id-ID');
+                                document.getElementById('cartCount').innerText = data.total_item;
+
+                                // 🔥 Notifikasi sukses
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Dihapus!',
+                                    text: 'Item berhasil dihapus',
+                                    timer: 1200,
+                                    showConfirmButton: false
+                                });
+
+                            });
+
+                    }
+
+                });
+
+            }
+
         });
     </script>
 

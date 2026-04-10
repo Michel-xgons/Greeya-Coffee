@@ -15,7 +15,10 @@ class RiwayatPesananController extends Controller
             return redirect()->back()->with('error', 'Session hilang');
         }
 
-        $riwayat = Pesanan::with(['customer', 'detailPesanans.menu'])
+        $riwayat = Pesanan::with([
+            'customer', 
+            'detailPesanans.menu',
+            'pembayaran'])
             ->where('customer_id', $customer_id)
             ->latest()
             ->get();
@@ -28,11 +31,14 @@ class RiwayatPesananController extends Controller
         $status = $request->status;
         $customer_id = session('customer_id');
 
-        $query = Pesanan::with(['customer', 'detailPesanans.menu'])
+        $query = Pesanan::with([
+            'customer', 
+        'detailPesanans.menu',
+        'pembayaran'])
             ->where('customer_id', $customer_id);
 
         if ($status && $status != 'all') {
-            $query->whereRaw('LOWER(payment_status) = ?', [strtolower($status)]);
+            $query->where('payment_status', $status);
         }
 
         $riwayat = $query->latest()->get();

@@ -76,7 +76,7 @@
                                         </div>
 
                                         {{-- ================= MINUMAN ================= --}}
-                                        @if (strtolower(trim($kategori->nama_kategori)) == 'minuman')
+                                        
                                             <div class="d-flex align-items-center justify-content-between mb-3 mt-3">
                                                 <div class="d-flex align-items-center border rounded-pill px-2">
                                                     <button type="button" class="btn btn-sm border-0"
@@ -93,37 +93,7 @@
                                             <a href="{{ route('detail.menu', $item->id) }}"
                                                 class="btn btn-dark rounded-pill w-100 fw-semibold go-detail">
                                                 Tambah
-                                            </a>
-
-                                            {{-- ================= MAKANAN ================= --}}
-                                        @else
-                                            <form action="{{ route('cart.add') }}" method="POST" class="cart-form">
-                                                @csrf
-
-                                                <input type="hidden" name="id" value="{{ $item->id }}">
-                                                <input type="hidden" name="nama" value="{{ $item->nama_menu }}">
-                                                <input type="hidden" name="harga" value="{{ $item->harga }}">
-
-                                                <div class="d-flex align-items-center justify-content-between mb-3 mt-3">
-                                                    <div class="d-flex align-items-center border rounded-pill px-2">
-
-                                                        <button type="button" class="btn btn-sm border-0"
-                                                            onclick="changeQty(this, -1)">−</button>
-
-                                                        <input type="number" value="1" name="qty" min="1"
-                                                            class="border-0 text-center" style="width:30px">
-
-                                                        <button type="button" class="btn btn-sm border-0"
-                                                            onclick="changeQty(this, 1)">+</button>
-                                                    </div>
-                                                </div>
-
-                                                <button type="submit" class="btn btn-dark rounded-pill w-100 fw-semibold">
-                                                    Tambah
-                                                </button>
-                                            </form>
-                                        @endif
-
+                                            </a>                                                   
                                     </div>
                                 </div>
 
@@ -144,7 +114,6 @@
         @endforeach
     </div>
 
-    {{-- ================= JS ================= --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
@@ -167,68 +136,6 @@
             });
 
             // add to cart AJAX
-            document.querySelectorAll('.cart-form').forEach(form => {
-                form.addEventListener('submit', function(e) {
-                    e.preventDefault();
-
-                    const btn = form.querySelector('button[type="submit"]');
-                    btn.disabled = true;
-                    btn.innerHTML = 'Loading...';
-
-                    fetch(form.action, {
-                            method: 'POST',
-                            body: new FormData(form),
-                            credentials: 'same-origin'
-                        })
-                        .then(async res => {
-                            let data;
-
-                            try {
-                                data = await res.json();
-                            } catch {
-                                throw new Error('Response bukan JSON');
-                            }
-
-                            if (!res.ok) {
-                                throw new Error(data.message || 'Server error');
-                            }
-
-                            return data;
-                        })
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Berhasil!',
-                                    text: 'Menu ditambahkan ke keranjang',
-                                    timer: 1500,
-                                    showConfirmButton: false
-                                });
-                                updateCartUI(data);
-
-                                const cartItems = document.getElementById('cartItems');
-                                const modalTotal = document.getElementById('modalTotal');
-
-                                if (data.html) {
-                                    document.getElementById('cartItems').innerHTML = data.html;
-                                }
-
-                                if (data.total) {
-                                    document.getElementById('modalTotal').innerText =
-                                        "Rp " + Number(data.total).toLocaleString('id-ID');
-                                }
-                            }
-                        })
-                        .catch(err => {
-                            console.error(err);
-                            alert(err.message);
-                        })
-                        .finally(() => {
-                            btn.disabled = false;
-                            btn.innerHTML = 'Tambah';
-                        });
-                });
-            });
         });
 
         function updateCartUI(data) {

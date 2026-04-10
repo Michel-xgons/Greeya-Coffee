@@ -6,18 +6,27 @@ use App\Models\Customer;
 use App\Models\Pesanan;
 use App\Models\DetailPesanan;
 use App\Models\Pembayaran;
-use App\Models\Menu;
 use App\Models\Menus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Xendit\Configuration;
 use Xendit\Invoice\InvoiceApi;
 use Xendit\Invoice\CreateInvoiceRequest;
+use Illuminate\Support\Facades\Log;
 
 class PaymentService
 {
     public function createInvoice(array $data): array
     {
+dd('MASUK CONTROLLER');
+        if (!isset($data['meja_id'])) {
+            throw new \Exception('Meja tidak ditemukan');
+        }
+        if (empty($data['cart']['items'])) {
+            throw new \Exception('Keranjang kosong');
+        }
+
+
         DB::beginTransaction();
 
         try {
@@ -27,6 +36,11 @@ class PaymentService
             $itemsData = [];
 
             foreach ($data['cart']['items'] as $item) {
+
+                if (!isset($item['qty']) || $item['qty'] <= 0) {
+                    throw new \Exception('Jumlah item tidak valid');
+                }
+
                 $menu = Menus::findOrFail($item['id']);
 
                 $itemSubtotal = $menu->harga * $item['qty'];
@@ -53,17 +67,20 @@ class PaymentService
 
             // 3️⃣ Pesanan
             $pesanan = Pesanan::create([
-                'id_customer' => $customer->id,
+                'customer_id' => $customer->id,
                 'kode_pesanan' => 'ORD-' . Str::uuid(),
+                'meja_id' => $data['meja_id'],
+                'waktu_pesan' => now(),
                 'total_harga' => $totalBayar,
-                'status_pesanan' => 'PENDING'
+                'payment_status' => 'unpaid',
+                'status' => 'pending',
             ]);
 
             // 4️⃣ Detail
             foreach ($itemsData as $item) {
                 DetailPesanan::create([
-                    'id_pesanan' => $pesanan->id,
-                    'id_menu' => $item['menu']->id,
+                    'pesanan_id' => $pesanan->id,
+                    'menu_id' => $item['menu']->id,
                     'jumlah' => $item['qty'],
                     'harga' => $item['menu']->harga,
                     'subtotal' => $item['subtotal']
@@ -105,63 +122,68 @@ class PaymentService
         } catch (\Exception $e) {
             DB::rollBack();
 
+            Log::error('PaymentService Error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             throw $e;
         }
     }
 
     public function handleWebhook($request)
-{
-    $callbackToken = $request->header('x-callback-token');
+    {
+        $callbackToken = $request->header('x-callback-token');
 
-    if ($callbackToken !== config('services.xendit.callback_token')) {
-        return response()->json(['message' => 'Invalid token'], 403);
-    }
-
-    $payload = $request->all();
-
-    $pembayaran = Pembayaran::where(
-        'xendit_invoice_id',
-        $payload['id'] ?? null
-    )->first();
-
-    if (!$pembayaran) {
-        return response()->json(['message' => 'Pembayaran tidak ditemukan'], 404);
-    }
-
-    // Hindari double processing
-    if ($pembayaran->status_pembayaran === 'paid') {
-        return response()->json(['message' => 'Already processed']);
-    }
-
-    DB::transaction(function () use ($pembayaran, $payload) {
-
-        if ($payload['status'] === 'PAID') {
-
-            $pembayaran->update([
-                'status_pembayaran' => 'paid',
-                'waktu_bayar' => now(),
-                'metode_pembayaran' => $payload['payment_method'] ?? 'unknown',
-                'callback_payload' => $payload,
-            ]);
-
-            $pembayaran->pesanan->update([
-                'status_pesanan' => 'PAID'
-            ]);
+        if ($callbackToken !== config('services.xendit.callback_token')) {
+            return response()->json(['message' => 'Invalid token'], 403);
         }
 
-        if ($payload['status'] === 'EXPIRED') {
+        $payload = $request->all();
 
-            $pembayaran->update([
-                'status_pembayaran' => 'expired',
-                'callback_payload' => $payload,
-            ]);
+        $pembayaran = Pembayaran::where(
+            'xendit_invoice_id',
+            $payload['id'] ?? null
+        )->first();
 
-            $pembayaran->pesanan->update([
-                'status_pesanan' => 'EXPIRED'
-            ]);
+        if (!$pembayaran) {
+            return response()->json(['message' => 'Pembayaran tidak ditemukan'], 404);
         }
-    });
 
-    return response()->json(['success' => true]);
-}
+        // Hindari double processing
+        if ($pembayaran->status_pembayaran === 'paid') {
+            return response()->json(['message' => 'Already processed']);
+        }
+
+        DB::transaction(function () use ($pembayaran, $payload) {
+
+            $status = $payload['status'] ?? null;
+
+            if ($status === 'PAID') {
+
+                $pembayaran->update([
+                    'status_pembayaran' => 'paid',
+                    'waktu_bayar' => now(),
+                    'metode_pembayaran' => $payload['payment_method'] ?? 'unknown',
+                    'callback_payload' => $payload,
+                ]);
+
+                $pembayaran->pesanan->update([
+                    'payment_status' => 'paid'
+                ]);
+            } elseif ($status === 'EXPIRED') {
+
+                $pembayaran->update([
+                    'status_pembayaran' => 'expired',
+                    'callback_payload' => $payload,
+                ]);
+
+                $pembayaran->pesanan->update([
+                    'payment_status' => 'unpaid'
+                ]);
+            }
+        });
+
+        return response()->json(['success' => true]);
+    }
 }

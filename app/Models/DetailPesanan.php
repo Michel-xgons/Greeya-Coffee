@@ -25,5 +25,8 @@ class DetailPesanan extends Model
     {
         return $this->belongsTo(Menus::class);
     }
-    
+    public function pembayaran()
+{
+    return $this->hasOne(Pembayaran::class, 'pesanan_id');
+}
 }

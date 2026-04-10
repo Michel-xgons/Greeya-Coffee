@@ -26,8 +26,9 @@ class XenditService
      */
     public function createQrisTransaction(Pesanan $pesanan)
     {
-        $externalId = 'ORD-' . $pesanan->id . '-' . Str::uuid();
-        $grossAmount = $pesanan->total_harga + 4000;
+        $externalId = 'ORD-' . $pesanan->id . '-' . now()->timestamp;
+        $grossAmount = $pesanan->total_harga;
+        $pesanan->loadMissing(['detailPesanans.menu', 'customer']);
         $payload = [
             'external_id' => $externalId,
             'amount' => $grossAmount,
@@ -59,12 +60,7 @@ class XenditService
                 ];
             })->toArray(),
 
-            'fees' => [
-                [
-                    'type' => 'PPN',
-                    'value' => 4000,
-                ],
-            ],
+            
             'payment_methods' => ['QRIS'],
             'metadata' => [
                 'order_id' => $pesanan->id,

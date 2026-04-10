@@ -9,6 +9,7 @@ use App\Models\Pembayaran;
 use App\Services\XenditService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 
 
@@ -25,10 +26,10 @@ class PaymentController extends Controller
                 ->with('error', 'Keranjang kosong.');
         }
 
-        if (!session()->has('customer_id')) {
-            return redirect()->route('Pemesanan')
-                ->with('error', 'Silakan isi data pemesan.');
-        }
+        // if (!session()->has('customer_id')) {
+        //     return redirect()->route('Pemesanan')
+        //         ->with('error', 'Silakan isi data pemesan.');
+        // }
 
         return view('frontend.payment');
     }
@@ -39,65 +40,53 @@ class PaymentController extends Controller
     }
 
 
-    public function createInvoice(Request $request)
-    {
-        
-        // 1. VALIDASI
-        $request->validate([
-            'nama'    => 'required|string|max:100',
-            'email'   => 'required|email',
-            'telepon' => 'required|string',
-        ]);
+   public function createInvoice(Request $request)
+{
+    DB::beginTransaction();
 
-        // 2. AMBIL / BUAT CUSTOMER
+    try {
+
+        // CUSTOMER
+        $customerData = $request->input('customer');
+
+        if (
+            !$customerData ||
+            empty($customerData['name']) ||
+            empty($customerData['email']) ||
+            empty($customerData['phone'])
+        ) {
+            return back()->with('error', 'Data customer tidak lengkap');
+        }
+
         $customer = Customer::firstOrCreate(
-            ['no_telpon' => $request->telepon],
+            ['no_telpon' => $customerData['phone']],
             [
-                'name'  => $request->nama,
-                'email' => $request->email,
+                'name'  => $customerData['name'],
+                'email' => $customerData['email'],
             ]
         );
 
-        session([
-            'customer_id' => $customer->id
-        ]);
-
-
-        // 3. CEK ORDER PENDING
-        $existingOrder = Pesanan::where('customer_id', $customer->id)
-            ->where('payment_status', 'pending')
-            ->latest()
-            ->first();
-
-        if ($existingOrder) {
-            return redirect()->route('payment.show', $existingOrder->id);
-        }
-
-        // 4. AMBIL CART
+        // CART
         $cart = session('cart', []);
-
         if (empty($cart)) {
-            return redirect()->route('Branda')
-                ->with('error', 'Cart kosong');
+            return back()->with('error', 'Cart kosong');
         }
 
-
-        // 5. MEJA
-        $meja = session('meja_id');
-
-        if (!$meja) {
-            return redirect('/')
-                ->with('error', 'Meja belum dipilih');
+        // MEJA
+        if (!session()->has('nomor_meja')) {
+            return back()->with('error', 'Meja belum dipilih');
         }
 
-        // 6. HITUNG TOTAL
+        $meja = session('nomor_meja');
+
+        // TOTAL
         $totalHarga = 0;
 
         foreach ($cart as $item) {
             $totalHarga += $item['harga'] * $item['qty'];
         }
 
-        // 7. BUAT PESANAN
+        // PESANAN
         $pesanan = Pesanan::create([
             'kode_pesanan'   => 'ORD-' . Str::uuid(),
             'customer_id'    => $customer->id,
@@ -108,24 +97,30 @@ class PaymentController extends Controller
             'total_harga'    => $totalHarga
         ]);
 
-        // 8. DETAIL PESANAN
+        // DETAIL
         foreach ($cart as $item) {
             $pesanan->detailPesanans()->create([
-                'menu_id'   => $item['id'],
-                'varian'    => $item['varian'] ?? null,
-                'note'      => $item['note'] ?? null,
-                'subtotal'  => $item['harga'] * $item['qty'],
-                'jumlah'    => $item['qty'],
-                'harga'     => $item['harga'],
+                'menu_id'    => $item['menu_id'],
+                'variant_id' => $item['variant_id'] ?? null,
+                'note'       => $item['note'] ?? null,
+                'subtotal'   => $item['harga'] * $item['qty'],
+                'jumlah'     => $item['qty'],
+                'harga'      => $item['harga'],
             ]);
         }
 
-        // 9. BUAT INVOICE
-
+        // XENDIT
         $pembayaran = $this->xendit->createQrisTransaction($pesanan);
 
+        DB::commit();
+
         return redirect($pembayaran->invoice_url);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        dd($e->getMessage()); // 🔥 biar error kelihatan jelas
     }
+}
 
     public function success()
     {
@@ -134,19 +129,27 @@ class PaymentController extends Controller
 
     public function failed(Request $request)
     {
-        return redirect(route(''))->with('error', 'Payment failed');
+        return redirect()->route('Branda')->with('error', 'Payment failed');
     }
 
     public function payAgain(Pesanan $pesanan)
     {
+        // kalau sudah dibayar
         if ($pesanan->payment_status === 'paid') {
             return redirect()->back()->with('error', 'Pesanan sudah dibayar');
         }
 
+        // 🔥 TAMBAHKAN DI SINI
+        if ($pesanan->pembayaran && $pesanan->pembayaran->transaction_status === 'pending') {
+            return redirect($pesanan->pembayaran->invoice_url);
+        }
+
+        // kalau belum ada / sudah expired → buat baru
         $pembayarans = $this->xendit->createQrisTransaction($pesanan);
 
         return redirect($pembayarans->invoice_url);
     }
+
 
 
     public function show($id)
@@ -198,7 +201,7 @@ class PaymentController extends Controller
             return response()->json(['message' => 'Pesanan tidak ditemukan'], 404);
         }
 
-        if ($status === 'PAID') {
+        if ($status === 'PAID' && $pembayaran->transaction_status !== 'PAID') {
 
             $pembayaran->update([
                 'transaction_status' => 'PAID',
@@ -212,7 +215,7 @@ class PaymentController extends Controller
             ]);
         }
 
-        if ($status === 'EXPIRED') {
+        if ($status === 'EXPIRED' && $pembayaran->transaction_status !== 'EXPIRED') {
 
             $pembayaran->update([
                 'transaction_status' => 'EXPIRED'

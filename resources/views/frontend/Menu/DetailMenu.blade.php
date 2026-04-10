@@ -15,9 +15,14 @@
 
                 <h5 class="fw-bold mb-1">{{ $menu->nama_menu }}</h5>
                 <div class="fw-semibold mb-3">
-                    Rp{{ number_format($menu->harga, 0, ',', '.') }}
+                    @if ($menu->variants->isNotEmpty())
+                        Rp {{ number_format($menu->variants->min('harga'), 0, ',', '.') }}
+                    @else
+                        Rp {{ number_format($menu->harga, 0, ',', '.') }}
+                    @endif
                 </div>
-                <div class="fw-semibold mb-2">{{ $menu->deskripsi }}
+                <div class="fw-semibold mb-2">
+                    {{ $menu->deskripsi }}
                 </div>
 
                 <hr>
@@ -25,25 +30,29 @@
                 <form action="{{ route('cart.add') }}" method="POST" class="cart-form">
                     @csrf
 
-                    <input type="hidden" name="id" value="{{ $menu->id }}">
-                    <input type="hidden" name="nama" value="{{ $menu->nama_menu }}">
-                    <input type="hidden" name="harga" value="{{ $menu->harga }}">
+
 
 
                     <!-- variant -->
-                    @if (optional($menu->kategori)->nama_kategori == 'Minuman')
+                    @if ($menu->variants->isNotEmpty())
+
                         <div class="fw-semibold mb-2">Pilih Varian</div>
 
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="varian" value="HOT" required>
-                            <label class="form-check-label">HOT</label>
-                        </div>
+                        @foreach ($menu->variants as $index => $variant)
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="variant_id" value="{{ $variant->id }}"
+                                    {{ $index == 0 ? 'checked' : '' }} required>
 
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="radio" name="varian" value="ICE" required>
-                            <label class="form-check-label">ICE</label>
-                        </div>
+                                <label class="form-check-label">
+                                    {{ $variant->nama_variant }} -
+                                    Rp {{ number_format($variant->harga, 0, ',', '.') }}
+                                </label>
+                            </div>
+                        @endforeach
                     @else
+                        {{-- ✅ UNTUK MAKANAN --}}
+                        <input type="hidden" name="menu_id" value="{{ $menu->id }}">
+
                     @endif
 
                     <!-- qty -->
@@ -58,6 +67,8 @@
                     <button type="submit" class="btn btn-dark w-100">
                         Tambah Pesanan
                     </button>
+
+
                 </form>
 
 
@@ -78,10 +89,10 @@
                 const btn = form.querySelector('button');
                 btn.disabled = true;
 
-                const varianInput = document.querySelectorAll('input[name="varian"]');
+                const variantInput = document.querySelectorAll('input[name="variant_id"]');
 
-                if (varianInput.length > 0) {
-                    const selected = document.querySelector('input[name="varian"]:checked');
+                if (variantInput.length > 0) {
+                    const selected = document.querySelector('input[name="variant_id"]:checked');
                     if (!selected) {
                         Swal.fire({
                             icon: 'warning',
@@ -123,7 +134,7 @@
                             });
 
                             form.reset();
-                            
+
                             const cartCount = document.getElementById('cartCount');
                             const cartItems = document.getElementById('cartItems');
                             const modalTotal = document.getElementById('modalTotal');

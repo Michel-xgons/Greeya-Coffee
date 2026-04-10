@@ -12,11 +12,13 @@
 
                 <div>
                     @if ($pesanan->payment_status == 'paid')
-                        <span class="badge bg-success px-3 py-2">Lunas</span>
+                        <span class="badge bg-success">Lunas</span>
                     @elseif($pesanan->payment_status == 'pending')
-                        <span class="badge bg-warning text-dark px-3 py-2">Menunggu Bayar</span>
+                        <span class="badge bg-warning text-dark">Menunggu Bayar</span>
+                    @elseif($pesanan->payment_status == 'expired')
+                        <span class="badge bg-danger">Kadaluarsa</span>
                     @else
-                        <span class="badge bg-danger px-3 py-2">Kadaluarsa</span>
+                        <span class="badge bg-secondary">Status Tidak Diketahui</span>
                     @endif
                 </div>
             </div>
@@ -26,7 +28,7 @@
             @foreach ($pesanan->detailPesanans as $item)
                 <div class="d-flex flex-column flex-md-row align-items-md-center mb-3">
                     <div class="me-3">
-                        @if ($item->menu->gambar)
+                        @if ($item->menu && $item->menu->gambar)
                             <img src="{{ asset('storage/' . $item->menu->gambar) }}" width="60" height="60"
                                 class="rounded object-fit-cover">
                         @endif
@@ -62,7 +64,7 @@
                 @if ($pesanan->payment_status == 'pending' && $pesanan->pembayaran)
                     <a href="{{ $pesanan->pembayaran->invoice_url }}" class="btn btn-warning btn-sm">
                         Bayar Sekarang
-                    </a> 
+                    </a>
                 @elseif ($pesanan->payment_status == 'expired')
                     <form action="{{ route('pay.again', $pesanan->id) }}" method="POST" class="d-inline">
                         @csrf

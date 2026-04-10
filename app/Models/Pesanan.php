@@ -12,6 +12,7 @@ class Pesanan extends Model
         'kode_pesanan',
         'waktu_pesan',
         'payment_status',
+        'status',
         'catatan',
         'total_harga',   
     ];
