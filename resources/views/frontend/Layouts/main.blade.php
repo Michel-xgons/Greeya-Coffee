@@ -138,7 +138,7 @@
                 </li>
 
                 <li class="list-group-item">
-                    <a href="{{ route('riwayat') }}" class="text-decoration-none text-dark d-block">
+                    <a href="{{ route('riwayat.pesanan') }}" class="text-decoration-none text-dark d-block">
                         Halaman Riwayat pesanan
                     </a>
                 </li>
@@ -349,7 +349,7 @@
 
                     if (result.isConfirmed) {
 
-                        fetch("{{ route('cart.delete') }}", {
+                        fetch("{{ route('cart.remove') }}", {
                                 method: "POST",
                                 headers: {
                                     "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')

@@ -5,25 +5,25 @@
 <div class="card p-3">
     <h5 class="text-center mb-3">Data Pemesan</h5>
 
-    <form action="/create-invoice"
-          method="POST"
-          novalidate
-          onsubmit="console.log('FORM SUBMIT')">
+    <form action="{{ route('pemesanan.simpan') }}" method="POST">
         @csrf
 
         <div class="mb-3">
             <strong>Nama</strong>
-            <input type="text" name="customer[name]" class="form-control">
+            <input type="text" name="customer[name]" class="form-control"
+    value="{{ session('customer_data.name') }}">
         </div>
 
         <div class="mb-3">
             <strong>Email</strong>
-            <input type="email" name="customer[email]" class="form-control">
+            <input type="email" name="customer[email]" class="form-control"
+    value="{{ session('customer_data.email') }}">
         </div>
 
         <div class="mb-3">
             <strong>Nomor Telepon</strong>
-            <input type="text" name="customer[phone]" class="form-control">
+            <input type="text" name="customer[phone]" class="form-control"
+    value="{{ session('customer_data.phone') }}">
         </div>
 
         @if (session('nomor_meja'))

@@ -46,6 +46,11 @@ class MenuResource extends Resource
                     ->numeric()
                     ->required(),
 
+                    Select::make('variants')
+    ->multiple()
+    ->relationship('variants', 'nama_variant')
+    ->label('Variant'),
+
                 FileUpload::make('gambar')
                     ->image()
                     ->disk('public')

@@ -50,11 +50,11 @@
                                             </div>
                                         </div>
 
-                                        @if (!empty($item['varian']))
-                                            <div class="small text-muted">
-                                                Varian: {{ $item['varian'] }}
-                                            </div>
-                                        @endif
+                                        @if (!empty($item['variant']))
+    <div class="small text-muted">
+        Varian: {{ strtoupper($item['variant']) }}
+    </div>
+@endif
 
                                         <div class="small text-muted">
                                             Harga: Rp{{ number_format($item['harga'], 0, ',', '.') }}
@@ -125,7 +125,7 @@
                     {{ 'Rp' . number_format($total + 4000, 0, ',', '.') }}
                 </div>
             </div>
-            <form action="{{ route('checkout.process') }}" method="POST">
+            <form action="{{ route('Pemesanan') }}" method="GET">
                 @csrf
                 <button type="submit" class="btn btn-dark rounded-pill px-4 fw-bold w-100 w-md-auto">
                     Lanjut Pembayaran
@@ -216,7 +216,7 @@
                     },
                     body: JSON.stringify({
                         row_id: row_id,
-                        change: change
+                        action: change > 0 ? 'plus' : 'minus'
                     })
                 })
                 .then(res => res.json())

@@ -9,7 +9,7 @@ class DetailPesanan extends Model
     protected $fillable = [
         'pesanan_id',
         'menu_id',
-        'varian',
+        'variant',
         'note',
         'jumlah',
         'harga',

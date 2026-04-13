@@ -37,16 +37,13 @@ Route::get('/pemesanan', [PemesananController::class, 'index'])
 Route::get('/DetailMenu/{id}', [BrandaController::class, 'show'])
     ->name('detail.menu');
 
-Route::post('/checkout/process', [CheckOutController::class, 'process'])
-    ->name('checkout.process');
+// Route::post('/checkout/process', [CheckOutController::class, 'process'])
+//     ->name('checkout.process');
 Route::post('/pemesanan/simpan', [PemesananController::class, 'simpan'])
     ->name('pemesanan.simpan');
 
 Route::get('/riwayat-pesanan', [RiwayatPesananController::class, 'index'])
     ->name('riwayat.pesanan');
-
-Route::post('/create-invoice', [PaymentController::class, 'createInvoice'])
-    ->name('invoice.create');
 
 Route::get('/payment/{id}', [PaymentController::class, 'show'])
     ->name('payment.show');
@@ -64,14 +61,20 @@ Route::post('/cart/destroy', function () {
 
 Route::get('/cek-status/{id}', [PaymentController::class, 'cekStatus']);
 
-Route::get('/riwayat', [RiwayatPesananController::class, 'index'])->name('riwayat');
+// Route::get('/riwayat', [RiwayatPesananController::class, 'index'])->name('riwayat');
 
 Route::get('/search-menu', [BrandaController::class, 'search'])->name('search.menu');
 
 
-Route::post('/cart/delete', [BrandaController::class, 'cart_delete'])->name('cart.delete');
+// Route::post('/cart/delete', [BrandaController::class, 'cart_delete'])->name('cart.delete');
 
 Route::get('/pesan-lagi', function () {
     session()->forget('cart');
     return redirect()->route('Branda');
 })->name('pesan.lagi');
+
+Route::get('/checkout/auto', [CheckOutController::class, 'auto'])
+    ->name('checkout.auto');
+
+    Route::get('/pemesanan/auto', [PemesananController::class, 'auto'])
+    ->name('pemesanan.auto');

@@ -20,9 +20,9 @@
                         {{ $item['nama'] }}
                     </div>
 
-                    @if (!empty($item['varian']))
+                    @if (!empty($item['variant']))
                         <div class="small text-muted">
-                            Varian: {{ $item['varian'] }}
+                            Varian: {{ strtoupper($item['variant']) }}
                         </div>
                     @endif
 

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
 
 class CheckOutController extends Controller
@@ -8,47 +9,44 @@ class CheckOutController extends Controller
     public function index()
     {
         $cart = session('cart', []);
-        // Proteksi cart kosong
+
+        // 🔒 Proteksi cart kosong
         if (empty($cart)) {
             return redirect()->route('Branda')
                 ->with('error', 'Keranjang masih kosong.');
         }
 
-
-        $total = 0;
-        foreach ($cart as $item) {
-            $total += $item['harga'] * $item['qty'];
-        }
+        $total = collect($cart)->sum(fn($item) => $item['harga'] * $item['qty']);
 
         return view('frontend.Menu.checkout', compact('cart', 'total'));
     }
 
+    // 🔥 LOAD CART (UNTUK MODAL)
+    public function cart()
+    {
+        $cart = session('cart', []);
 
-    public function get()
-{
-    $cart = session('cart', []);
+        $total = collect($cart)->sum(fn($item) => $item['harga'] * $item['qty']);
 
-    $total = collect($cart)->sum(function ($item) {
-        return $item['harga'] * $item['qty'];
-    });
+        $html = view('frontend.cart.items', compact('cart'))->render();
 
-    return response()->json([
-        'cart' => $cart,
-        'total' => $total,
-        'html' => view('frontend.partials.cart_items', compact('cart'))->render()
-    ]);
-}
+        return response()->json([
+            'html' => $html,
+            'total' => $total,
+            'total_item' => collect($cart)->sum('qty')
+        ]);
+    }
 
+    // 🔥 UPDATE QTY (FIXED)
     public function update(Request $request)
     {
         $request->validate([
             'row_id' => 'required',
-            'change' => 'required|integer'
+            'action' => 'required|in:plus,minus'
         ]);
 
         $cart = session()->get('cart', []);
         $row_id = $request->row_id;
-        $change = (int) $request->change;
 
         if (!isset($cart[$row_id])) {
             return response()->json([
@@ -57,31 +55,38 @@ class CheckOutController extends Controller
             ]);
         }
 
-        $cart[$row_id]['qty'] += $change;
+        // 🔥 LOGIC BARU (SYNC DENGAN JS)
+        if ($request->action === 'plus') {
+            $cart[$row_id]['qty'] += 1;
+        }
 
-        // Minimal qty
+        if ($request->action === 'minus') {
+            $cart[$row_id]['qty'] -= 1;
+        }
+
+        // 🔒 MINIMAL
         if ($cart[$row_id]['qty'] < 1) {
             unset($cart[$row_id]);
         }
 
-        // Maksimal qty
+        // 🔒 MAX
         if (isset($cart[$row_id]) && $cart[$row_id]['qty'] > 100) {
             $cart[$row_id]['qty'] = 100;
         }
 
         session()->put('cart', $cart);
 
-        $grandTotal = collect($cart)->sum(function ($item) {
-            return $item['harga'] * $item['qty'];
-        });
+        $total = collect($cart)->sum(fn($item) => $item['harga'] * $item['qty']);
 
         return response()->json([
             'success' => true,
-            'total' => $grandTotal,
-            'cart' => $cart
+            'html' => view('frontend.cart.items', compact('cart'))->render(),
+            'total' => $total,
+            'total_item' => collect($cart)->sum('qty')
         ]);
     }
 
+    // 📝 NOTE
     public function note(Request $request)
     {
         $request->validate([
@@ -111,10 +116,10 @@ class CheckOutController extends Controller
         ]);
     }
 
+    // 🗑️ DELETE ITEM (SUDAH FIX)
     public function remove(Request $request)
     {
         $cart = session()->get('cart', []);
-
         $row_id = $request->row_id;
 
         if (isset($cart[$row_id])) {
@@ -123,43 +128,46 @@ class CheckOutController extends Controller
 
         session()->put('cart', $cart);
 
+        $total = collect($cart)->sum(fn($item) => $item['harga'] * $item['qty']);
+
         return response()->json([
             'success' => true,
-            'cart' => $cart
+            'html' => view('frontend.cart.items', compact('cart'))->render(),
+            'total' => $total,
+            'total_item' => collect($cart)->sum('qty')
         ]);
     }
 
-    public function process()
-    {
-        // Cek cart kosong
-        if (empty(session('cart'))) {
-            return redirect()->route('Branda')
-                ->with('error', 'Keranjang kosong');
-        }
+    // 🚀 PROCESS CHECKOUT
+    // public function process()
+    // {
+    //     // 🔒 CEK CART
+    //     if (empty(session('cart'))) {
+    //         return redirect()->route('Branda')
+    //             ->with('error', 'Keranjang kosong');
+    //     }
 
-        // Cek customer
-        if (!session()->has('customer')) {
-            return redirect()->route('Pemesanan')
-                ->with('error', 'Silakan isi data pemesan');
-        }
+    //     // 🔒 CEK CUSTOMER
+    //     if (!session()->has('customer')) {
+    //         return redirect()->route('Pemesanan')
+    //             ->with('error', 'Silakan isi data pemesan');
+    //     }
 
-        return redirect()->route('payment');
+    //     // 🔥 NEXT STEP → PAYMENT
+    //     return redirect()->route('pemesanan.simpan');
+    // }
+   public function auto()
+{
+    if (empty(session('cart'))) {
+        return redirect()->route('Branda')
+            ->with('error', 'Cart kosong');
     }
 
-    public function cart()
-{
-    $cart = session('cart', []);
+    if (!session()->has('customer_data')) {
+        return redirect()->route('Pemesanan');
+    }
 
-    $total = collect($cart)->sum(function($item) {
-        return $item['harga'] * $item['qty'];
-    });
-
-    $html = view('frontend.cart.items', compact('cart'))->render();
-
-    return response()->json([
-        'html' => $html,
-        'total' => $total,
-        'total_item' => collect($cart)->sum('qty')
-    ]);
+    // 🔥 LANGSUNG PROSES PESANAN (TANPA LOOP)
+   return redirect()->route('pemesanan.auto');
 }
 }

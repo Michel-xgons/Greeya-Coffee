@@ -21,9 +21,4 @@ class Menus extends Model
     {
         return $this->belongsTo(Kategoris::class, 'kategori_id');
     }
-
-    public function variants()
-    {
-        return $this->hasMany(Variant::class, 'menu_id');
-    }
 }

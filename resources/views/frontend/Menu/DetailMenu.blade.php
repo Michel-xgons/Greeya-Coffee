@@ -14,13 +14,12 @@
             <div class="card-body">
 
                 <h5 class="fw-bold mb-1">{{ $menu->nama_menu }}</h5>
+
+                <!-- HARGA -->
                 <div class="fw-semibold mb-3">
-                    @if ($menu->variants->isNotEmpty())
-                        Rp {{ number_format($menu->variants->min('harga'), 0, ',', '.') }}
-                    @else
-                        Rp {{ number_format($menu->harga, 0, ',', '.') }}
-                    @endif
+                    Rp {{ number_format($menu->harga, 0, ',', '.') }}
                 </div>
+
                 <div class="fw-semibold mb-2">
                     {{ $menu->deskripsi }}
                 </div>
@@ -30,35 +29,28 @@
                 <form action="{{ route('cart.add') }}" method="POST" class="cart-form">
                     @csrf
 
-
-
-
-                    <!-- variant -->
-                    @if ($menu->variants->isNotEmpty())
-
+                    <!-- VARIANT -->
+                    @if ($menu->kategori->nama_kategori === 'Minuman')
                         <div class="fw-semibold mb-2">Pilih Varian</div>
 
-                        @foreach ($menu->variants as $index => $variant)
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="radio" name="variant_id" value="{{ $variant->id }}"
-                                    {{ $index == 0 ? 'checked' : '' }} required>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="variant" value="hot" checked>
+                            <label class="form-check-label">Hot</label>
+                        </div>
 
-                                <label class="form-check-label">
-                                    {{ $variant->nama_variant }} -
-                                    Rp {{ number_format($variant->harga, 0, ',', '.') }}
-                                </label>
-                            </div>
-                        @endforeach
-                    @else
-                        {{-- ✅ UNTUK MAKANAN --}}
-                        <input type="hidden" name="menu_id" value="{{ $menu->id }}">
-
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="variant" value="ice">
+                            <label class="form-check-label">Ice</label>
+                        </div>
                     @endif
 
-                    <!-- qty -->
+                    <!-- MENU ID -->
+                    <input type="hidden" name="menu_id" value="{{ $menu->id }}">
+
+                    <!-- QTY -->
                     <input type="hidden" name="qty" value="{{ $qty }}">
 
-                    <!-- note -->
+                    <!-- NOTE -->
                     <div class="mb-3">
                         <label class="form-label">Catatan</label>
                         <textarea name="note" class="form-control" rows="3"></textarea>
@@ -68,14 +60,11 @@
                         Tambah Pesanan
                     </button>
 
-
                 </form>
-
 
             </div>
         </div>
     </div>
-
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -89,10 +78,12 @@
                 const btn = form.querySelector('button');
                 btn.disabled = true;
 
-                const variantInput = document.querySelectorAll('input[name="variant_id"]');
+                // 🔥 VALIDASI VARIANT
+                const variantInputs = document.querySelectorAll('input[name="variant"]');
 
-                if (variantInput.length > 0) {
-                    const selected = document.querySelector('input[name="variant_id"]:checked');
+                if (variantInputs.length > 0) {
+                    const selected = document.querySelector('input[name="variant"]:checked');
+
                     if (!selected) {
                         Swal.fire({
                             icon: 'warning',
@@ -133,7 +124,8 @@
                                 showConfirmButton: false
                             });
 
-                            form.reset();
+                            // reset note saja
+                            form.querySelector('textarea[name="note"]').value = '';
 
                             const cartCount = document.getElementById('cartCount');
                             const cartItems = document.getElementById('cartItems');

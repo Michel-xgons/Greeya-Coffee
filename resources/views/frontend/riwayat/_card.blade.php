@@ -11,11 +11,19 @@
                 </div>
 
                 <div>
-                    @if ($pesanan->payment_status == 'paid')
+                    @php
+                        $status = $pesanan->pembayaran->transaction_status ?? null;
+                    @endphp
+
+                    @php
+                        $status = strtolower($pesanan->pembayaran->transaction_status ?? '');
+                    @endphp
+
+                    @if ($status == 'paid')
                         <span class="badge bg-success">Lunas</span>
-                    @elseif($pesanan->payment_status == 'pending')
+                    @elseif($status == 'pending')
                         <span class="badge bg-warning text-dark">Menunggu Bayar</span>
-                    @elseif($pesanan->payment_status == 'expired')
+                    @elseif($status == 'expired')
                         <span class="badge bg-danger">Kadaluarsa</span>
                     @else
                         <span class="badge bg-secondary">Status Tidak Diketahui</span>
@@ -61,7 +69,7 @@
             <hr>
 
             <div class="text-end">
-                @if ($pesanan->payment_status == 'pending' && $pesanan->pembayaran)
+                @if ($status == 'pending' && $pesanan->pembayaran)
                     <a href="{{ $pesanan->pembayaran->invoice_url }}" class="btn btn-warning btn-sm">
                         Bayar Sekarang
                     </a>

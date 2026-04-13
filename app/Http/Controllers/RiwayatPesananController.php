@@ -16,9 +16,10 @@ class RiwayatPesananController extends Controller
         }
 
         $riwayat = Pesanan::with([
-            'customer', 
+            'customer',
             'detailPesanans.menu',
-            'pembayaran'])
+            'pembayaran'
+        ])
             ->where('customer_id', $customer_id)
             ->latest()
             ->get();
@@ -32,13 +33,16 @@ class RiwayatPesananController extends Controller
         $customer_id = session('customer_id');
 
         $query = Pesanan::with([
-            'customer', 
-        'detailPesanans.menu',
-        'pembayaran'])
+            'customer',
+            'detailPesanans.menu',
+            'pembayaran'
+        ])
             ->where('customer_id', $customer_id);
 
         if ($status && $status != 'all') {
-            $query->where('payment_status', $status);
+            $query->whereHas('pembayaran', function ($q) use ($status) {
+                $q->where('transaction_status', $status);
+            });
         }
 
         $riwayat = $query->latest()->get();
@@ -49,6 +53,4 @@ class RiwayatPesananController extends Controller
             'html' => $html
         ]);
     }
-
-    
 }

@@ -1,15 +1,11 @@
 <?php
 
 namespace App\Http\Controllers;
-
-use App\Models\Customer;
 use App\Models\Pesanan;
-use Illuminate\Support\Str;
 use App\Models\Pembayaran;
 use App\Services\XenditService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
 
 
 
@@ -40,87 +36,87 @@ class PaymentController extends Controller
     }
 
 
-   public function createInvoice(Request $request)
-{
-    DB::beginTransaction();
+//    public function createInvoice(Request $request)
+// {
+//     DB::beginTransaction();
 
-    try {
+//     try {
 
-        // CUSTOMER
-        $customerData = $request->input('customer');
+//         // CUSTOMER
+//         $customerData = $request->input('customer');
 
-        if (
-            !$customerData ||
-            empty($customerData['name']) ||
-            empty($customerData['email']) ||
-            empty($customerData['phone'])
-        ) {
-            return back()->with('error', 'Data customer tidak lengkap');
-        }
+//         if (
+//             !$customerData ||
+//             empty($customerData['name']) ||
+//             empty($customerData['email']) ||
+//             empty($customerData['phone'])
+//         ) {
+//             return back()->with('error', 'Data customer tidak lengkap');
+//         }
 
-        $customer = Customer::firstOrCreate(
-            ['no_telpon' => $customerData['phone']],
-            [
-                'name'  => $customerData['name'],
-                'email' => $customerData['email'],
-            ]
-        );
+//         $customer = Customer::firstOrCreate(
+//             ['no_telpon' => $customerData['phone']],
+//             [
+//                 'name'  => $customerData['name'],
+//                 'email' => $customerData['email'],
+//             ]
+//         );
 
-        // CART
-        $cart = session('cart', []);
-        if (empty($cart)) {
-            return back()->with('error', 'Cart kosong');
-        }
+//         // CART
+//         $cart = session('cart', []);
+//         if (empty($cart)) {
+//             return back()->with('error', 'Cart kosong');
+//         }
 
-        // MEJA
-        if (!session()->has('nomor_meja')) {
-            return back()->with('error', 'Meja belum dipilih');
-        }
+//         // MEJA
+//         if (!session()->has('nomor_meja')) {
+//             return back()->with('error', 'Meja belum dipilih');
+//         }
 
-        $meja = session('nomor_meja');
+//         $meja = session('nomor_meja');
 
-        // TOTAL
-        $totalHarga = 0;
+//         // TOTAL
+//         $totalHarga = 0;
 
-        foreach ($cart as $item) {
-            $totalHarga += $item['harga'] * $item['qty'];
-        }
+//         foreach ($cart as $item) {
+//             $totalHarga += $item['harga'] * $item['qty'];
+//         }
 
-        // PESANAN
-        $pesanan = Pesanan::create([
-            'kode_pesanan'   => 'ORD-' . Str::uuid(),
-            'customer_id'    => $customer->id,
-            'meja_id'        => $meja,
-            'waktu_pesan'    => now(),
-            'payment_status' => 'pending',
-            'catatan'        => 'Pesanan dari checkout',
-            'total_harga'    => $totalHarga
-        ]);
+//         // PESANAN
+//         $pesanan = Pesanan::create([
+//             'kode_pesanan'   => 'ORD-' . Str::uuid(),
+//             'customer_id'    => $customer->id,
+//             'meja_id'        => $meja,
+//             'waktu_pesan'    => now(),
+//             'payment_status' => 'pending',
+//             'catatan'        => 'Pesanan dari checkout',
+//             'total_harga'    => $totalHarga
+//         ]);
 
-        // DETAIL
-        foreach ($cart as $item) {
-            $pesanan->detailPesanans()->create([
-                'menu_id'    => $item['menu_id'],
-                'variant_id' => $item['variant_id'] ?? null,
-                'note'       => $item['note'] ?? null,
-                'subtotal'   => $item['harga'] * $item['qty'],
-                'jumlah'     => $item['qty'],
-                'harga'      => $item['harga'],
-            ]);
-        }
+//         // DETAIL
+//         foreach ($cart as $item) {
+//             $pesanan->detailPesanans()->create([
+//                 'menu_id'    => $item['menu_id'],
+//                 'variant' => $item['variant'] ?? null,
+//                 'note'       => $item['note'] ?? null,
+//                 'subtotal'   => $item['harga'] * $item['qty'],
+//                 'jumlah'     => $item['qty'],
+//                 'harga'      => $item['harga'],
+//             ]);
+//         }
 
-        // XENDIT
-        $pembayaran = $this->xendit->createQrisTransaction($pesanan);
+//         // XENDIT
+//         $pembayaran = $this->xendit->createQrisTransaction($pesanan);
 
-        DB::commit();
+//         DB::commit();
 
-        return redirect($pembayaran->invoice_url);
+//         return redirect($pembayaran->invoice_url);
 
-    } catch (\Exception $e) {
-        DB::rollBack();
-        dd($e->getMessage()); // 🔥 biar error kelihatan jelas
-    }
-}
+//     } catch (\Exception $e) {
+//         DB::rollBack();
+//         dd($e->getMessage()); // 🔥 biar error kelihatan jelas
+//     }
+// }
 
     public function success()
     {
