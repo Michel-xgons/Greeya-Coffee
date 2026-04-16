@@ -34,12 +34,12 @@
                         <div class="fw-semibold mb-2">Pilih Varian</div>
 
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="variant" value="hot" checked>
+                            <input class="form-check-input" type="radio" name="variant" value="hot" >
                             <label class="form-check-label">Hot</label>
                         </div>
 
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="variant" value="ice">
+                            <input class="form-check-input" type="radio" name="variant" value="ice" checked>
                             <label class="form-check-label">Ice</label>
                         </div>
                     @endif

@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Pesanan;
 use App\Models\Pembayaran;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 
 class XenditService
@@ -47,8 +46,8 @@ class XenditService
                 'invoice_paid' => ['email'],
                 'invoice_expired' => ['email'],
             ],
-            'success_redirect_url' => url('/payment/' . $pesanan->id),
-            'failure_redirect_url' => url('/payment-failure'),
+            'success_redirect_url' => url('/riwayat-pesanan?phone=' . $pesanan->customer->no_telpon),
+'failure_redirect_url' => url('/riwayat-pesanan?phone=' . $pesanan->customer->no_telpon),
             'items' =>
 
             $pesanan->detailPesanans->map(function ($item) {

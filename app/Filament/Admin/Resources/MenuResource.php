@@ -11,7 +11,6 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
-use Filament\Tables;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Actions\EditAction;
@@ -21,9 +20,9 @@ class MenuResource extends Resource
 {
     protected static ?string $model = Menus::class;
     
-    protected static ?string $navigationLabel = 'Menu';
+    protected static ?string $navigationLabel = 'Tambah Menu';
     protected static ?string $pluralModelLabel = 'Menu';
-    protected static ?string $modelLabel = 'Menu';
+    protected static ?string $modelLabel = 'Tambah Menu';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -45,11 +44,6 @@ class MenuResource extends Resource
                 TextInput::make('harga')
                     ->numeric()
                     ->required(),
-
-                    Select::make('variants')
-    ->multiple()
-    ->relationship('variants', 'nama_variant')
-    ->label('Variant'),
 
                 FileUpload::make('gambar')
                     ->image()

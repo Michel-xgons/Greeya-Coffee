@@ -23,7 +23,7 @@ class DetailPesanan extends Model
 
     public function menu()
     {
-        return $this->belongsTo(Menus::class);
+        return $this->belongsTo(Menus::class,);
     }
     public function pembayaran()
 {

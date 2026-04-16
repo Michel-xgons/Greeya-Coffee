@@ -17,9 +17,9 @@ class MejaResource extends Resource
 {
     protected static ?string $model = Meja::class;
 
-    protected static ?string $navigationLabel = 'Meja';
+    protected static ?string $navigationLabel = 'Tambah Meja';
     protected static ?string $pluralModelLabel = 'Meja';
-    protected static ?string $modelLabel = 'Meja';
+    protected static ?string $modelLabel = 'Tambah Meja';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
