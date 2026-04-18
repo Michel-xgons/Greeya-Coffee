@@ -28,8 +28,17 @@
 
     {{-- Header --}}
     <header class="position-relative">
-        <div class="position-relative py-2 px-3 d-flex align-items-center justify-content-end shadow-sm"
+        <div class="position-relative py-2 px-3 d-flex align-items-center justify-content-between shadow-sm"
             style="background:#3E2723;">
+
+            @if (!request()->routeIs('Branda'))
+                <a href="#" onclick="handleBack(event)"
+                    class="btn btn-light rounded-circle p-2 shadow-sm back-btn ripple">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+            @else
+                <div></div>
+            @endif
 
             <!-- Logo -->
             <div class="position-absolute top-50 start-50 translate-middle">
@@ -386,6 +395,18 @@
             }
 
         });
+    </script>
+
+    <script>
+        function handleBack(e) {
+            e.preventDefault();
+
+            if (window.history.length > 1 && document.referrer !== "") {
+                window.history.back();
+            } else {
+                window.location.href = "{{ route('Branda') }}";
+            }
+        }
     </script>
 
 </body>
