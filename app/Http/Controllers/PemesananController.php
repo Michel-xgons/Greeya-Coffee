@@ -16,13 +16,12 @@ class PemesananController extends Controller
 {
     public function index()
     {
-         // 🔥 cek apakah sudah ada data customer
-    if (session()->has('customer_data')) {
-        return redirect()->route('checkout.auto');
-    }
+        // 🔥 cek apakah sudah ada data customer
+        if (session()->has('customer_data')) {
+            return redirect()->route('checkout.auto');
+        }
 
-    return view('frontend.Menu.Pemesanan');
-
+        return view('frontend.Menu.Pemesanan');
     }
 
     public function simpan(Request $request)
@@ -35,6 +34,8 @@ class PemesananController extends Controller
         ]);
 
         $cart = session('cart', []);
+
+       
 
         if (empty($cart)) {
             return redirect()->route('Branda')
@@ -51,7 +52,7 @@ class PemesananController extends Controller
         // 🔥 NORMALISASI NOMOR
         $phone = preg_replace('/[^0-9]/', '', $request->input('customer.phone'));
 
-        $totalHarga = collect($cart)->sum(fn($item) => $item['harga'] * $item['qty']);
+        $totalHarga = collect($cart)->sum(fn($item) => $item['harga'] * $item['qty'] + 4000);
 
         DB::beginTransaction();
 
@@ -93,6 +94,7 @@ class PemesananController extends Controller
                     'jumlah'     => $item['qty'],
                     'harga'      => $item['harga'],
                     'subtotal'   => $item['harga'] * $item['qty'],
+
                     'note'       => $item['note'] ?? null,
                 ]);
             }
@@ -116,27 +118,27 @@ class PemesananController extends Controller
     }
 
     public function auto()
-{
-    if (empty(session('cart'))) {
-        return redirect()->route('Branda')
-            ->with('error', 'Cart kosong');
+    {
+        if (empty(session('cart'))) {
+            return redirect()->route('Branda')
+                ->with('error', 'Cart kosong');
+        }
+
+        if (!session()->has('customer_data')) {
+            return redirect()->route('Pemesanan');
+        }
+
+        $customer = session('customer_data');
+
+        // inject ke request biar reuse simpan()
+        request()->merge([
+            'customer' => [
+                'name' => $customer['name'],
+                'email' => $customer['email'],
+                'phone' => $customer['phone'],
+            ]
+        ]);
+
+        return $this->simpan(request());
     }
-
-    if (!session()->has('customer_data')) {
-        return redirect()->route('Pemesanan');
-    }
-
-    $customer = session('customer_data');
-
-    // inject ke request biar reuse simpan()
-    request()->merge([
-        'customer' => [
-            'name' => $customer['name'],
-            'email' => $customer['email'],
-            'phone' => $customer['phone'],
-        ]
-    ]);
-
-    return $this->simpan(request());
-}
 }
