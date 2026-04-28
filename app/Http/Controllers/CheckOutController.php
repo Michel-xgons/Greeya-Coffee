@@ -10,7 +10,6 @@ class CheckOutController extends Controller
     {
         $cart = session('cart', []);
 
-        // 🔒 Proteksi cart kosong
         if (empty($cart)) {
             return redirect()->route('Branda')
                 ->with('error', 'Keranjang masih kosong.');
@@ -21,7 +20,6 @@ class CheckOutController extends Controller
         return view('frontend.Menu.checkout', compact('cart', 'total'));
     }
 
-    // 🔥 LOAD CART (UNTUK MODAL)
     public function cart()
     {
         $cart = session('cart', []);
@@ -37,7 +35,6 @@ class CheckOutController extends Controller
         ]);
     }
 
-    // 🔥 UPDATE QTY (FIXED)
     public function update(Request $request)
     {
         $request->validate([
@@ -55,7 +52,6 @@ class CheckOutController extends Controller
             ]);
         }
 
-        // 🔥 LOGIC BARU (SYNC DENGAN JS)
         if ($request->action === 'plus') {
             $cart[$row_id]['qty'] += 1;
         }
@@ -64,12 +60,11 @@ class CheckOutController extends Controller
             $cart[$row_id]['qty'] -= 1;
         }
 
-        // 🔒 MINIMAL
+
         if ($cart[$row_id]['qty'] < 1) {
             unset($cart[$row_id]);
         }
 
-        // 🔒 MAX
         if (isset($cart[$row_id]) && $cart[$row_id]['qty'] > 100) {
             $cart[$row_id]['qty'] = 100;
         }
@@ -86,7 +81,6 @@ class CheckOutController extends Controller
         ]);
     }
 
-    // 📝 NOTE
     public function note(Request $request)
     {
         $request->validate([
@@ -105,7 +99,6 @@ class CheckOutController extends Controller
         }
 
         $note = trim($request->note);
-
         $cart[$row_id]['note'] = $note === '' ? null : $note;
 
         session()->put('cart', $cart);
@@ -116,7 +109,6 @@ class CheckOutController extends Controller
         ]);
     }
 
-    // 🗑️ DELETE ITEM (SUDAH FIX)
     public function remove(Request $request)
     {
         $cart = session()->get('cart', []);
@@ -138,36 +130,17 @@ class CheckOutController extends Controller
         ]);
     }
 
-    // 🚀 PROCESS CHECKOUT
-    // public function process()
-    // {
-    //     // 🔒 CEK CART
-    //     if (empty(session('cart'))) {
-    //         return redirect()->route('Branda')
-    //             ->with('error', 'Keranjang kosong');
-    //     }
+    public function auto()
+    {
+        if (empty(session('cart'))) {
+            return redirect()->route('Branda')
+                ->with('error', 'Cart kosong');
+        }
 
-    //     // 🔒 CEK CUSTOMER
-    //     if (!session()->has('customer')) {
-    //         return redirect()->route('Pemesanan')
-    //             ->with('error', 'Silakan isi data pemesan');
-    //     }
+        if (!session()->has('customer_data')) {
+            return redirect()->route('Pemesanan');
+        }
 
-    //     // 🔥 NEXT STEP → PAYMENT
-    //     return redirect()->route('pemesanan.simpan');
-    // }
-   public function auto()
-{
-    if (empty(session('cart'))) {
-        return redirect()->route('Branda')
-            ->with('error', 'Cart kosong');
+        return redirect()->route('pemesanan.auto');
     }
-
-    if (!session()->has('customer_data')) {
-        return redirect()->route('Pemesanan');
-    }
-
-    // 🔥 LANGSUNG PROSES PESANAN (TANPA LOOP)
-   return redirect()->route('pemesanan.auto');
-}
 }

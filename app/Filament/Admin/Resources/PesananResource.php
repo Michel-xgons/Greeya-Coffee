@@ -10,6 +10,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use App\Filament\Admin\Resources\PesananResource\RelationManagers\DetailPesanansRelationManager;
+use Illuminate\Database\Eloquent\Builder;
 
 class PesananResource extends Resource
 {
@@ -29,40 +30,45 @@ class PesananResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('detailPesanans.menu.nama_menu')
-                    ->label('Menu')
-                    ->listWithLineBreaks(),
-                TextColumn::make('detailPesanans.variant')->label('Varian'),
-                TextColumn::make('detailPesanans.jumlah')->label('Jumlah Pesanan'),
-                TextColumn::make('waktu_pesan')->label('Waktu pesanan'),
-                TextColumn::make('note')->label('Catatan'),
-                TextColumn::make('meja_id')->label('Nomor Meja'),
+                TextColumn::make('customer.name')
+                    ->label('Customer')
+                    ->searchable(),
+
+                TextColumn::make('customer.no_telpon')
+                    ->label('No HP'),
+
                 TextColumn::make('payment_status')
-                    ->label('Status Pembayaran')
+                    ->label('Status')
                     ->badge()
                     ->colors([
                         'success' => 'PAID',
                         'danger' => 'PENDING',
                     ]),
-                TextColumn::make('total_harga')
-                    ->money('IDR'),
-                TextColumn::make('customer.name')->label('Nama Customer'),
-                TextColumn::make('customer.no_telpon')->label('Nomor HP'),
-                TextColumn::make('customer.email')->label('Email'),
-                
 
+                TextColumn::make('created_at')
+                    ->label('Tanggal')
+                    ->dateTime('d M Y H:i'),
 
-                // TextColumn::make('waktu_pesan')
-                //     ->label('Waktu Pesanan')
-                //     ->since(),
             ])
+            ->recordUrl(fn($record) => route('filament.admin.resources.pesanans.view', $record))
             ->defaultSort('created_at', 'desc');
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with([
+                'customer:id,name,no_telpon',
+                'detailPesanans.menu:id,nama_menu,harga'
+            ])
+            ->withCount('detailPesanans');
     }
 
     public static function getRelations(): array
     {
         return [
             DetailPesanansRelationManager::class,
+            
         ];
     }
 
@@ -70,7 +76,7 @@ class PesananResource extends Resource
     {
         return [
             'index' => Pages\ListPesanans::route('/'),
-
+            'view' => Pages\ViewPesanan::route('/{record}'),
         ];
     }
 }

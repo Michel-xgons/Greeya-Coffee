@@ -25,6 +25,10 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin')
             ->path('admin')
+            ->renderHook(
+                'panels::body.end',
+                fn() => view('filament.scripts.notif-sound')
+            )
             ->login()
             ->colors([
                 'primary' => Color::Amber,
@@ -50,6 +54,8 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+
+
             ->authMiddleware([
                 Authenticate::class,
             ]);

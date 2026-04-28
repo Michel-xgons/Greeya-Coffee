@@ -22,7 +22,7 @@ class MenuResource extends Resource
     
     protected static ?string $navigationLabel = 'Tambah Menu';
     protected static ?string $pluralModelLabel = 'Menu';
-    protected static ?string $modelLabel = 'Tambah Menu';
+    protected static ?string $modelLabel = ' Menu';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

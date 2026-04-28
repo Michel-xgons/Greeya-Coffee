@@ -12,6 +12,8 @@ use Filament\Resources\Resource;
 use Filament\Forms\Form;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\Action;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class MejaResource extends Resource
 {
@@ -34,7 +36,7 @@ class MejaResource extends Resource
                     ->live()
                     ->afterStateUpdated(function (?string $state, callable $set) {
                         if ($state) {
-                            $set('qr_code', config('app.url') . '/meja/' . $state);
+                            $set('qr_code', url('/pesan/meja/' . $state));
                         }
                     }),
                 // ->afterStateUpdated(function ($state, callable $set) {
@@ -44,7 +46,8 @@ class MejaResource extends Resource
                 TextInput::make('qr_code')
                     ->label('QR Code URL')
                     ->readOnly()
-                    ->dehydrated(),
+                    ->default(fn($record) => $record ? url('/pesan/meja/' . $record->nomor_meja) : null)
+                    ->dehydrated(false),
 
                 Select::make('status')
                     ->options([
@@ -65,6 +68,10 @@ class MejaResource extends Resource
                     ->sortable(),
 
                 TextColumn::make('qr_code')
+                    ->label('QR URL')
+                    ->state(fn($record) => url('/pesan/meja/' . $record->nomor_meja))
+                    ->url(fn($record) => url('/pesan/meja/' . $record->nomor_meja))
+                    ->openUrlInNewTab()
                     ->limit(30),
 
                 TextColumn::make('status')
@@ -76,6 +83,24 @@ class MejaResource extends Resource
             ])
             ->actions([
                 EditAction::make(),
+
+                Action::make('qr')
+                    ->label('QR')
+                    ->icon('heroicon-o-qr-code')
+                    ->modalHeading(fn($record) => 'QR Meja ' . $record->nomor_meja)
+                    ->modalSubmitAction(false) // hilangkan tombol submit
+                    ->modalCancelActionLabel('Tutup')
+                    ->modalContent(function ($record) {
+
+                        $url = url('/pesan/meja/' . $record->nomor_meja);
+                        $qr = QrCode::size(200)->generate($url);
+
+                        return view('filament.qr-preview', [
+                            'qr' => $qr,
+                            'url' => $url,
+                            'meja' => $record,
+                        ]);
+                    }),
             ])
             ->bulkActions([
                 DeleteBulkAction::make(),

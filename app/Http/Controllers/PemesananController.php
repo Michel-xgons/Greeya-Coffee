@@ -16,7 +16,6 @@ class PemesananController extends Controller
 {
     public function index()
     {
-        // 🔥 cek apakah sudah ada data customer
         if (session()->has('customer_data')) {
             return redirect()->route('checkout.auto');
         }
@@ -26,7 +25,6 @@ class PemesananController extends Controller
 
     public function simpan(Request $request)
     {
-        // 🔥 VALIDASI
         $request->validate([
             'customer.name'  => 'required|string|max:100',
             'customer.email' => 'required|email',
@@ -34,8 +32,6 @@ class PemesananController extends Controller
         ]);
 
         $cart = session('cart', []);
-
-       
 
         if (empty($cart)) {
             return redirect()->route('Branda')
@@ -49,7 +45,6 @@ class PemesananController extends Controller
                 ->with('error', 'Meja belum dipilih');
         }
 
-        // 🔥 NORMALISASI NOMOR
         $phone = preg_replace('/[^0-9]/', '', $request->input('customer.phone'));
 
         $totalHarga = collect($cart)->sum(fn($item) => $item['harga'] * $item['qty'] + 4000);
@@ -57,7 +52,6 @@ class PemesananController extends Controller
         DB::beginTransaction();
 
         try {
-            // 🔥 FIX CUSTOMER (ANTI DUPLIKAT)
             $customer = Customer::firstOrCreate(
                 ['no_telpon' => $phone],
                 [
@@ -74,7 +68,6 @@ class PemesananController extends Controller
                 ]
             ]);
 
-            // PESANAN
             $pesanan = Pesanan::create([
                 'kode_pesanan'   => 'ORD-' . Str::uuid(),
                 'customer_id'    => $customer->id,
@@ -85,7 +78,6 @@ class PemesananController extends Controller
                 'total_harga'    => $totalHarga
             ]);
 
-            // DETAIL
             foreach ($cart as $item) {
                 DetailPesanan::create([
                     'pesanan_id' => $pesanan->id,
@@ -94,12 +86,10 @@ class PemesananController extends Controller
                     'jumlah'     => $item['qty'],
                     'harga'      => $item['harga'],
                     'subtotal'   => $item['harga'] * $item['qty'],
-
                     'note'       => $item['note'] ?? null,
                 ]);
             }
 
-            // XENDIT
             $payment = app(XenditService::class)
                 ->createQrisTransaction($pesanan);
 
@@ -130,7 +120,6 @@ class PemesananController extends Controller
 
         $customer = session('customer_data');
 
-        // inject ke request biar reuse simpan()
         request()->merge([
             'customer' => [
                 'name' => $customer['name'],

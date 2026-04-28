@@ -33,7 +33,6 @@ class XenditService
             'amount' => $grossAmount,
             'description' => 'Pembayaran Order #' . $externalId,
             'currency' => 'IDR',
-            // 'invoice_duration' => 600,
             'expiry_date' => now()->addMinutes(10)->toISOString(),
             'customer' => [
                 'given_names' => $pesanan->customer?->name ?? 'Customer',

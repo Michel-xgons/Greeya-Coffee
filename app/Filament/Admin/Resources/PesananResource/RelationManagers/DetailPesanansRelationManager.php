@@ -16,16 +16,31 @@ class DetailPesanansRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                TextColumn::make('menu.nama_menu')->label('Menu'),
+                TextColumn::make('menu.nama_menu')
+                    ->label('Menu'),
 
                 TextColumn::make('variant')
-                    ->formatStateUsing(fn ($state) => strtoupper($state ?? '-')),
+                    ->label('Variant'),
 
-                TextColumn::make('jumlah')->label('Qty'),
+                TextColumn::make('jumlah')
+                    ->label('Jumlah'),
+
+                TextColumn::make('menu.harga')
+                    ->label('Harga')
+                    ->money('IDR', true),
 
                 TextColumn::make('note')
                     ->label('Catatan')
+                    ->formatStateUsing(fn($state) => $state && $state !== 'EMPTY' ? $state : '-')
                     ->wrap(),
-            ]);
+
+                TextColumn::make('subtotal')
+                    ->label('Subtotal')
+                    ->getStateUsing(fn($record) => ($record->jumlah ?? 0) * ($record->menu->harga ?? 0))
+                    ->money('IDR', true),
+
+            ])
+            ->striped()
+            ->defaultSort('id', 'asc');
     }
 }

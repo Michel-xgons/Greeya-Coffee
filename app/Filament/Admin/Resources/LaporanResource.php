@@ -9,10 +9,6 @@ use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\Filter;
-use Filament\Forms\Components\DatePicker;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Columns\Summarizers\Sum;
 
 
 class LaporanResource extends Resource
@@ -36,97 +32,43 @@ class LaporanResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('kode_pesanan')
-                    ->label('Kode Pesanan')
-                    ->searchable(),
-                    
-
-                TextColumn::make('customer.name')
-                    ->label('Customer')
-                    ->default('-'),
-
-                TextColumn::make('meja_id')
-                    ->label('Meja')
-                    ->formatStateUsing(fn($state) => 'Meja ' . $state),
-
-                TextColumn::make('detailPesanans.menu.nama_menu')
-                    ->label('Menu')
-                    ->listWithLineBreaks(),
-
-                TextColumn::make('total_harga')
-                    ->label('Total')
-                    ->money('IDR', true)
-                    ->summarize(
-                        Sum::make()
-                            ->label('Total Pendapatan')
-                            ->money('IDR', true)
-                    ),
-
-                TextColumn::make('payment_status')
-                    ->label('Status')
-                    ->badge()
-                    ->colors([
-                        'success' => 'PAID',
-                        'danger' => 'PENDING',
-                    ]),
-
-                TextColumn::make('created_at')
+                TextColumn::make('tanggal')
                     ->label('Tanggal')
-                    ->dateTime('d M Y H:i'),
+                    ->date('d M Y'),
+
+                TextColumn::make('total')
+                    ->label('Total Pendapatan')
+                    ->money('IDR', true)
+                    ->weight('bold')
+                    ->color('success'),
             ])
-            ->defaultSort('created_at', 'desc')
-
-            ->filters([
-                SelectFilter::make('payment_status')
-                    ->label('Status')
-                    ->options([
-                        'PAID' => 'Paid',
-                        'PENDING' => 'Pending',
-                    ])
-                    ->default('PAID'),
-
-                SelectFilter::make('meja_id')
-                    ->label('Meja')
-                    ->options([
-                        1 => 'Meja 1',
-                        2 => 'Meja 2',
-                        3 => 'Meja 3',
-                        4 => 'Meja 4',
-                        5 => 'Meja 5',
-                    ]),
-
-                Filter::make('tanggal')
-                    ->form([
-                        DatePicker::make('from')->label('Dari'),
-                        DatePicker::make('until')->label('Sampai'),
-                    ])
-                    ->query(function (Builder $query, array $data) {
-                        return $query
-                            ->when(
-                                $data['from'],
-                                fn($q) => $q->whereDate('created_at', '>=', $data['from'])
-                            )
-                            ->when(
-                                $data['until'],
-                                fn($q) => $q->whereDate('created_at', '<=', $data['until'])
-                            );
-                    }),
-            ]);
+            ->recordUrl(
+    fn ($record) => route(
+        'filament.admin.resources.laporans.laporan-harian',
+        ['tanggal' => $record->tanggal]
+    )
+)
+            ->defaultSort('tanggal', 'desc');
     }
 
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with([
-                'detailPesanans.menu:id,nama_menu',
-                'customer:id,name'
-            ]);
+            ->selectRaw('
+            DATE(created_at) as tanggal,
+            SUM(total_harga) as total,
+            MIN(id) as id
+        ')
+            ->where('payment_status', 'paid')
+            ->groupBy('tanggal')
+            ->orderByDesc('tanggal');
     }
 
     public static function getPages(): array
-    {
-        return [
-            'index' => Pages\ListLaporans::route('/'),
-        ];
-    }
+{
+    return [
+        'index' => Pages\ListLaporans::route('/'),
+        'laporan-harian' => Pages\LaporanHarian::route('/harian/{tanggal}'),
+    ];
+}
 }
