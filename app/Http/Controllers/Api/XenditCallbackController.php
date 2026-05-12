@@ -7,6 +7,7 @@ use App\Models\Pembayaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class XenditCallbackController extends Controller
 {
@@ -18,7 +19,7 @@ class XenditCallbackController extends Controller
         Log::info('Xendit Callback:', $request->all());
 
         $externalId = $request->external_id ?? null;
-        $status = $request->status ?? null;
+        $status = strtoupper($request->status ?? '');
 
         if (!$externalId) {
             return response()->json(['message' => 'Invalid callback'], 400);
@@ -36,17 +37,19 @@ class XenditCallbackController extends Controller
 
             $transaction->transaction_status = strtoupper($status);
 
-            // Update related order
+
             if ($transaction->pesanan) {
+
                 if ($status === 'PAID') {
-                    $transaction->pesanan->payment_status = 'PAID';
+
+                    $transaction->pesanan->payment_status = 'paid';
                     $transaction->transaction_time = now();
                 } elseif ($status === 'EXPIRED') {
-                    $transaction->pesanan->payment_status = 'EXPIRED';
-                    $transaction->transaction_time = now();
-                } elseif ($status === 'FAILED') {
-                    $transaction->pesanan->payment_status = 'FAILED';
-                    $transaction->transaction_time = now();
+
+                    $transaction->pesanan->payment_status = 'expired';
+                } else {
+
+                    $transaction->pesanan->payment_status = 'pending';
                 }
 
                 $transaction->pesanan->save();

@@ -23,14 +23,14 @@ class MejaResource extends Resource
     protected static ?string $pluralModelLabel = 'Meja';
     protected static ?string $modelLabel = 'Tambah Meja';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-qr-code';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 TextInput::make('nomor_meja')
-                    ->label('Nomor Meja')
+                    ->numeric()
                     ->required()
                     ->unique(ignoreRecord: true)
                     ->live()
@@ -39,15 +39,6 @@ class MejaResource extends Resource
                             $set('qr_code', url('/pesan/meja/' . $state));
                         }
                     }),
-                // ->afterStateUpdated(function ($state, callable $set) {
-                //     $set('qr_code', url('/meja/' . $state));
-                // }),
-
-                TextInput::make('qr_code')
-                    ->label('QR Code URL')
-                    ->readOnly()
-                    ->default(fn($record) => $record ? url('/pesan/meja/' . $record->nomor_meja) : null)
-                    ->dehydrated(false),
 
                 Select::make('status')
                     ->options([
@@ -70,16 +61,20 @@ class MejaResource extends Resource
                 TextColumn::make('qr_code')
                     ->label('QR URL')
                     ->state(fn($record) => url('/pesan/meja/' . $record->nomor_meja))
+                    ->copyable()
                     ->url(fn($record) => url('/pesan/meja/' . $record->nomor_meja))
                     ->openUrlInNewTab()
                     ->limit(30),
 
                 TextColumn::make('status')
+                    ->label('Status Meja')
                     ->badge()
                     ->color(fn(string $state) => match ($state) {
                         'kosong' => 'success',
                         'digunakan' => 'danger',
                     }),
+
+
             ])
             ->actions([
                 EditAction::make(),
@@ -88,7 +83,7 @@ class MejaResource extends Resource
                     ->label('QR')
                     ->icon('heroicon-o-qr-code')
                     ->modalHeading(fn($record) => 'QR Meja ' . $record->nomor_meja)
-                    ->modalSubmitAction(false) // hilangkan tombol submit
+                    ->modalSubmitAction(false) 
                     ->modalCancelActionLabel('Tutup')
                     ->modalContent(function ($record) {
 
@@ -101,7 +96,42 @@ class MejaResource extends Resource
                             'meja' => $record,
                         ]);
                     }),
+
+                Action::make('toggleStatus')
+                    ->label(
+                        fn($record) =>
+                        $record->status === 'kosong'
+                            ? 'Digunakan'
+                            : 'Kosong'
+                    )
+
+                    ->icon(
+                        fn($record) =>
+                        $record->status === 'kosong'
+                            ? 'heroicon-m-x-circle'
+                            : 'heroicon-m-check-circle'
+                    )
+
+                    ->color(
+                        fn($record) =>
+                        $record->status === 'kosong'
+                            ? 'danger'
+                            : 'success'
+                    )
+
+                    ->requiresConfirmation()
+
+                    ->action(function ($record) {
+
+                        $record->update([
+                            'status' =>
+                            $record->status === 'kosong'
+                                ? 'digunakan'
+                                : 'kosong'
+                        ]);
+                    }),
             ])
+            ->actionsColumnLabel('Aksi')
             ->bulkActions([
                 DeleteBulkAction::make(),
             ]);

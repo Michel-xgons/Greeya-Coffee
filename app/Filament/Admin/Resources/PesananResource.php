@@ -6,7 +6,6 @@ use App\Filament\Admin\Resources\PesananResource\Pages;
 use App\Models\Pesanan;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use App\Filament\Admin\Resources\PesananResource\RelationManagers\DetailPesanansRelationManager;
@@ -16,23 +15,35 @@ class PesananResource extends Resource
 {
     protected static ?string $model = Pesanan::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
 
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                //
-            ]);
+            ->schema([]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->poll('5s')
+
             ->columns([
+
+                TextColumn::make('dilihat_admin')
+                    ->label('')
+                    ->badge()
+                    ->formatStateUsing(fn ($state) => $state == 0 ? 'BARU' : null)
+                    ->color('success'),
+
                 TextColumn::make('customer.name')
                     ->label('Customer')
-                    ->searchable(),
+                    ->searchable()
+                    ->weight(fn ($record) =>
+                        $record->dilihat_admin == 0
+                            ? 'bold'
+                            : 'normal'
+                    ),
 
                 TextColumn::make('customer.no_telpon')
                     ->label('No HP'),
@@ -40,17 +51,24 @@ class PesananResource extends Resource
                 TextColumn::make('payment_status')
                     ->label('Status')
                     ->badge()
-                    ->colors([
-                        'success' => 'PAID',
-                        'danger' => 'PENDING',
-                    ]),
+                    ->color(fn ($state) => match ($state) {
+                        'paid' => 'success',
+                        'pending' => 'warning',
+                        'expired' => 'danger',
+                        default => 'gray',
+                    }),
 
                 TextColumn::make('created_at')
                     ->label('Tanggal')
                     ->dateTime('d M Y H:i'),
 
             ])
-            ->recordUrl(fn($record) => route('filament.admin.resources.pesanans.view', $record))
+
+            ->recordUrl(
+                fn ($record) =>
+                route('filament.admin.resources.pesanans.view', $record)
+            )
+
             ->defaultSort('created_at', 'desc');
     }
 
@@ -68,7 +86,6 @@ class PesananResource extends Resource
     {
         return [
             DetailPesanansRelationManager::class,
-            
         ];
     }
 
@@ -79,4 +96,4 @@ class PesananResource extends Resource
             'view' => Pages\ViewPesanan::route('/{record}'),
         ];
     }
-}
+}   

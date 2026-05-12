@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Meja;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class MejaController extends Controller
 {
@@ -25,5 +26,19 @@ class MejaController extends Controller
         ]);
 
         return redirect('/menu');
+    }
+
+    public function print(Meja $meja)
+    {
+        $url = url('/pesan/meja/' . $meja->nomor_meja);
+
+        $qr = QrCode::size(300)
+            ->generate($url);
+
+        return view('print.qr-meja', compact(
+            'meja',
+            'qr',
+            'url'
+        ));
     }
 }

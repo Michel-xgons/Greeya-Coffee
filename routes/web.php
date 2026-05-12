@@ -11,10 +11,14 @@ use App\Http\Controllers\RiwayatPesananController;
 
 Route::get('/menu', [BrandaController::class, 'index'])
     ->name('Branda');
+    
 Route::post('/cart/add', [BrandaController::class, 'cart_add'])
     ->name('cart.add');
 
 Route::get('/pesan/meja/{nomor}', [MejaController::class, 'setMeja']);
+
+Route::get('/meja/{meja}/print', [MejaController::class, 'print'])
+    ->name('meja.print');
 
 Route::prefix('cart')->group(function () {
     Route::get('/checkout', [CheckOutController::class, 'index'])
@@ -43,9 +47,6 @@ Route::post('/pemesanan/simpan', [PemesananController::class, 'simpan'])
 Route::get('/riwayat-pesanan', [RiwayatPesananController::class, 'index'])
     ->name('riwayat.pesanan');
 
-Route::get('/payment/{id}', [PaymentController::class, 'show'])
-    ->name('payment.show');
-
 Route::get('/riwayat/data', [RiwayatPesananController::class, 'getRiwayat']);
 
 Route::post('/pay-again/{pesanan}', [PaymentController::class, 'payAgain'])
@@ -56,8 +57,6 @@ Route::post('/cart/destroy', function () {
 
     return response()->json(['success' => true]);
 })->name('cart.destroy');
-
-Route::get('/cek-status/{id}', [PaymentController::class, 'cekStatus']);
 
 Route::get('/search-menu', [BrandaController::class, 'search'])->name('search.menu');
 

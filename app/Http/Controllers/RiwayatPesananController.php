@@ -9,7 +9,7 @@ class RiwayatPesananController extends Controller
 {
     public function index(Request $request)
 {
-    $phone = $request->phone;
+    $phone = session('customer_data.phone');
 
     if (!$phone) {
         return redirect()->route('Branda')
@@ -33,7 +33,7 @@ class RiwayatPesananController extends Controller
     public function getRiwayat(Request $request)
 {
     $status = $request->status;
-    $phone = $request->phone;
+    $phone = session('customer_data.phone');
 
     $query = Pesanan::with([
         'customer',

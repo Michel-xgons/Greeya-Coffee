@@ -9,7 +9,12 @@ use App\Filament\Admin\Resources\PesananResource\Widgets\NotifPesananMasuk;
 class ListPesanans extends ListRecords
 {
     protected static string $resource = PesananResource::class;
-    protected static ?string $pollingInterval = '5s';
+
+    protected function getTablePollingInterval(): ?string
+    {
+        return '5s';
+    }
+
     protected function getHeaderWidgets(): array
     {
         return [

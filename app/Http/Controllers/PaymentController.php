@@ -44,7 +44,7 @@ class PaymentController extends Controller
             return redirect()->back()->with('error', 'Pesanan sudah dibayar');
         }
 
-        if ($pesanan->pembayaran && $pesanan->pembayaran->transaction_status === 'pending') {
+        if ($pesanan->pembayaran && strtoupper($pesanan->pembayaran->transaction_status) === 'PENDING') {
             return redirect($pesanan->pembayaran->invoice_url);
         }
 
@@ -53,19 +53,6 @@ class PaymentController extends Controller
         return redirect($pembayarans->invoice_url);
     }
 
-    public function show($id)
-    {
-        $pesanan = Pesanan::with(['detailPesanans.menu', 'pembayaran'])
-            ->where('id', $id)
-            ->whereIn('payment_status', ['pending', 'paid'])
-            ->firstOrFail();
-
-        if ($pesanan->payment_status == 'paid') {
-            session()->forget('cart');
-        }
-
-        return view('payment.show', compact('pesanan'));
-    }
 
     public function webhook(Request $request)
     {
@@ -130,18 +117,4 @@ class PaymentController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function cekStatus($id)
-    {
-        $pesanan = \App\Models\Pesanan::find($id);
-
-        if (!$pesanan) {
-            return response()->json([
-                'status' => 'not_found'
-            ], 404);
-        }
-
-        return response()->json([
-            'status' => $pesanan->payment_status
-        ]);
-    }
 }

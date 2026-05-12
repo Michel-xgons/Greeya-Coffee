@@ -14,7 +14,8 @@ class Pesanan extends Model
         'payment_status',
         'status',
         'catatan',
-        'total_harga',   
+        'total_harga',
+        'dilihat_admin',   
     ];
 
     public function meja()

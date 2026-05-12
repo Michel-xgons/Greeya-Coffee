@@ -34,7 +34,7 @@
                         <div class="fw-semibold mb-2">Pilih Varian</div>
 
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="variant" value="hot" >
+                            <input class="form-check-input" type="radio" name="variant" value="hot">
                             <label class="form-check-label">Hot</label>
                         </div>
 
@@ -78,25 +78,6 @@
                 const btn = form.querySelector('button');
                 btn.disabled = true;
 
-                // 🔥 VALIDASI VARIANT
-                const variantInputs = document.querySelectorAll('input[name="variant"]');
-
-                if (variantInputs.length > 0) {
-                    const selected = document.querySelector('input[name="variant"]:checked');
-
-                    if (!selected) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Oops...',
-                            text: 'Pilih varian dulu!',
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
-                        btn.disabled = false;
-                        return;
-                    }
-                }
-
                 const formData = new FormData(form);
 
                 fetch(form.action, {
@@ -116,26 +97,20 @@
                     })
                     .then(data => {
                         if (data.success) {
+
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Berhasil!',
                                 text: 'Menu ditambahkan ke keranjang',
-                                timer: 1500,
+                                timer: 1200,
                                 showConfirmButton: false
                             });
 
-                            // reset note saja
                             form.querySelector('textarea[name="note"]').value = '';
 
-                            const cartCount = document.getElementById('cartCount');
-                            const cartItems = document.getElementById('cartItems');
-                            const modalTotal = document.getElementById('modalTotal');
-
-                            if (cartCount) cartCount.innerText = data.total_item;
-                            if (cartItems) cartItems.innerHTML = data.html;
-                            if (modalTotal) {
-                                modalTotal.innerText = "Rp " + data.total.toLocaleString('id-ID');
-                            }
+                            setTimeout(() => {
+                                window.location.href = '/menu';
+                            }, 1200);
                         }
                     })
                     .catch(err => {

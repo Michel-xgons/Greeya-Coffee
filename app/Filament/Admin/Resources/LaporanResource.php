@@ -18,7 +18,7 @@ class LaporanResource extends Resource
     protected static ?string $label = 'Laporan';
     protected static ?string $navigationLabel = 'Laporan Penjualan';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
 
     public static function form(Form $form): Form
     {
@@ -36,18 +36,27 @@ class LaporanResource extends Resource
                     ->label('Tanggal')
                     ->date('d M Y'),
 
+                TextColumn::make('jumlah_transaksi')
+                    ->label('JumlahTransaksi')
+                    ->badge()
+                    ->color('primary'),
+
                 TextColumn::make('total')
                     ->label('Total Pendapatan')
                     ->money('IDR', true)
                     ->weight('bold')
-                    ->color('success'),
+                    ->color('success')
+                    ->description(
+                        fn($record) =>
+                        'Pendapatan harian'
+                    ),
             ])
             ->recordUrl(
-    fn ($record) => route(
-        'filament.admin.resources.laporans.laporan-harian',
-        ['tanggal' => $record->tanggal]
-    )
-)
+                fn($record) => route(
+                    'filament.admin.resources.laporans.laporan-harian',
+                    ['tanggal' => $record->tanggal]
+                )
+            )
             ->defaultSort('tanggal', 'desc');
     }
 
@@ -57,6 +66,7 @@ class LaporanResource extends Resource
             ->selectRaw('
             DATE(created_at) as tanggal,
             SUM(total_harga) as total,
+            COUNT(*) as jumlah_transaksi,
             MIN(id) as id
         ')
             ->where('payment_status', 'paid')
@@ -65,10 +75,10 @@ class LaporanResource extends Resource
     }
 
     public static function getPages(): array
-{
-    return [
-        'index' => Pages\ListLaporans::route('/'),
-        'laporan-harian' => Pages\LaporanHarian::route('/harian/{tanggal}'),
-    ];
-}
+    {
+        return [
+            'index' => Pages\ListLaporans::route('/'),
+            'laporan-harian' => Pages\LaporanHarian::route('/harian/{tanggal}'),
+        ];
+    }
 }

@@ -11,6 +11,7 @@ use App\Filament\Admin\Widgets\MenuTerlaris;
 class ListLaporans extends ListRecords
 {
     protected static string $resource = LaporanResource::class;
+    protected static ?string $title = 'Laporan Penjualan';
 
     protected function getHeaderActions(): array
     {

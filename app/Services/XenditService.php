@@ -6,6 +6,7 @@ use App\Models\Pesanan;
 use App\Models\Pembayaran;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class XenditService
 {
@@ -33,7 +34,7 @@ class XenditService
             'amount' => $grossAmount,
             'description' => 'Pembayaran Order #' . $externalId,
             'currency' => 'IDR',
-            'expiry_date' => now()->addMinutes(10)->toISOString(),
+            'expiry_date' => now()->addMinutes(10)->format('Y-m-d\TH:i:sP'),
             'customer' => [
                 'given_names' => $pesanan->customer?->name ?? 'Customer',
                 'email' => $pesanan->customer?->email ?? 'customer@example.com',
@@ -46,7 +47,7 @@ class XenditService
                 'invoice_expired' => ['email'],
             ],
             'success_redirect_url' => url('/riwayat-pesanan?phone=' . $pesanan->customer->no_telpon),
-'failure_redirect_url' => url('/riwayat-pesanan?phone=' . $pesanan->customer->no_telpon),
+            'failure_redirect_url' => url('/riwayat-pesanan?phone=' . $pesanan->customer->no_telpon),
             'items' =>
 
             $pesanan->detailPesanans->map(function ($item) {
@@ -58,7 +59,7 @@ class XenditService
                 ];
             })->toArray(),
 
-            
+
             'payment_methods' => ['QRIS'],
             'metadata' => [
                 'order_id' => $pesanan->id,
@@ -68,11 +69,6 @@ class XenditService
             'api-version' => "2022-07-31",
             'Content-Type' => 'application/json',
         ];
-
-        //         dd([
-        //     'env' => env('XENDIT_SECRET_KEY'),
-        //     'config' => config('services.xendit.secret_key'),
-        // ]);
 
         Log::info('PAYLOAD KIRIM:', $payload);
 
@@ -88,7 +84,7 @@ class XenditService
         Log::info('Xendit Response:', $result);
         $expiry = null;
         if (!empty($result['expiry_date'])) {
-            $expiry = \Carbon\Carbon::parse($result['expiry_date'])
+            $expiry = Carbon::parse($result['expiry_date'])
                 ->setTimezone('Asia/Jakarta')
                 ->format('Y-m-d H:i:s');
         }
