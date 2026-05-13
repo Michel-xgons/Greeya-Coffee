@@ -29,7 +29,7 @@
     {{-- Header --}}
     <header class="position-relative">
         <div class="position-relative py-2 px-3 d-flex align-items-center justify-content-between shadow-sm"
-            style="background:#3E2723;">
+            style="background:#3E2723;"> 
 
             @if (!request()->routeIs('Branda'))
                 <a href="#" onclick="handleBack(event)"
