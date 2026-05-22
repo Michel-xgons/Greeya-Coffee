@@ -5,13 +5,14 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BrandaController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CheckOutController;
+use App\Http\Controllers\LaporanPdfController;
 use App\Http\Controllers\PemesananController;
 use App\Http\Controllers\MejaController;
 use App\Http\Controllers\RiwayatPesananController;
 
 Route::get('/menu', [BrandaController::class, 'index'])
     ->name('Branda');
-    
+
 Route::post('/cart/add', [BrandaController::class, 'cart_add'])
     ->name('cart.add');
 
@@ -68,5 +69,8 @@ Route::get('/pesan-lagi', function () {
 Route::get('/checkout/auto', [CheckOutController::class, 'auto'])
     ->name('checkout.auto');
 
-    Route::get('/pemesanan/auto', [PemesananController::class, 'auto'])
+Route::get('/pemesanan/auto', [PemesananController::class, 'auto'])
     ->name('pemesanan.auto');
+
+Route::get('/laporan/print', [LaporanPdfController::class, 'index'])
+    ->name('laporan.print');

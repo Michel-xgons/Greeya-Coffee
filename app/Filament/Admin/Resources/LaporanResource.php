@@ -10,6 +10,7 @@ use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Columns\Summarizers\Sum;
+use Filament\Tables\Actions\Action;
 
 class LaporanResource extends Resource
 {
@@ -89,7 +90,13 @@ class LaporanResource extends Resource
                     ->label('Waktu')
                     ->time('H:i'),
             ])
-
+            ->headerActions([
+                Action::make('print')
+                    ->label('Cetak PDF')
+                    ->icon('heroicon-o-printer')
+                    ->url(fn() => route('laporan.print'))
+                    ->openUrlInNewTab(),
+            ])
             ->defaultSort('created_at', 'desc');
     }
 
