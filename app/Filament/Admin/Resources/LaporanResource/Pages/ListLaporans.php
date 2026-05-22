@@ -9,6 +9,7 @@ use App\Filament\Admin\Widgets\GrafikPenjualan;
 use App\Filament\Admin\Widgets\MenuTerlaris;
 use Filament\Resources\Components\Tab;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Actions\Action;
 
 class ListLaporans extends ListRecords
 {
@@ -17,7 +18,22 @@ class ListLaporans extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [];
+        return [
+
+            Action::make('print')
+                ->label('Cetak PDF')
+                ->icon('heroicon-o-printer')
+                ->url(function () {
+
+                    $filter = request()->query('activeTab') ?? 'harian';
+
+                    return route('laporan.print', [
+                        'filter' => $filter
+                    ]);
+                })
+                ->openUrlInNewTab(),
+
+        ];
     }
 
     protected function getHeaderWidgets(): array
@@ -30,35 +46,33 @@ class ListLaporans extends ListRecords
     }
 
     public function getTabs(): array
-{
-    return [
+    {
+        return [
 
-        'harian' => Tab::make('Hari Ini')
-            ->modifyQueryUsing(function (Builder $query) {
+            'harian' => Tab::make('Hari Ini')
+                ->modifyQueryUsing(function (Builder $query) {
 
-                $query->whereDate('created_at', today())
-                    ->where('payment_status', 'paid');
-            }),
+                    $query->whereDate('created_at', today())
+                        ->where('payment_status', 'paid');
+                }),
 
-        'mingguan' => Tab::make('Minggu Ini')
-            ->modifyQueryUsing(function (Builder $query) {
+            'mingguan' => Tab::make('Minggu Ini')
+                ->modifyQueryUsing(function (Builder $query) {
 
-                $query->whereBetween('created_at', [
-                    now()->startOfWeek(),
-                    now()->endOfWeek()
-                ])
-                ->where('payment_status', 'paid');
-            }),
+                    $query->whereBetween('created_at', [
+                        now()->startOfWeek(),
+                        now()->endOfWeek()
+                    ])
+                        ->where('payment_status', 'paid');
+                }),
 
-        'bulanan' => Tab::make('Bulan Ini')
-            ->modifyQueryUsing(function (Builder $query) {
+            'bulanan' => Tab::make('Bulan Ini')
+                ->modifyQueryUsing(function (Builder $query) {
 
-                $query->whereMonth('created_at', now()->month)
-                    ->whereYear('created_at', now()->year)
-                    ->where('payment_status', 'paid');
-            }),
-    ];
+                    $query->whereMonth('created_at', now()->month)
+                        ->whereYear('created_at', now()->year)
+                        ->where('payment_status', 'paid');
+                }),
+        ];
+    }
 }
-}
-
-
