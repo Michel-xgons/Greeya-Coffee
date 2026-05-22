@@ -36,45 +36,26 @@ class ListLaporans extends ListRecords
         'harian' => Tab::make('Harian')
             ->modifyQueryUsing(function (Builder $query) {
 
-                $query->selectRaw('
-                    DATE(created_at) as tanggal,
-                    SUM(total_harga) as total,
-                    COUNT(*) as jumlah_transaksi,
-                    MIN(id) as id
-                ')
-                    ->where('payment_status', 'paid')
-                    ->groupBy('tanggal')
-                    ->orderByDesc('tanggal');
+                $query->whereDate('created_at', today())
+                    ->where('payment_status', 'paid');
             }),
 
         'mingguan' => Tab::make('Mingguan')
             ->modifyQueryUsing(function (Builder $query) {
 
-                $query->selectRaw('
-                    YEARWEEK(created_at, 1) as minggu,
-                    MIN(DATE(created_at)) as tanggal,
-                    SUM(total_harga) as total,
-                    COUNT(*) as jumlah_transaksi,
-                    MIN(id) as id
-                ')
-                    ->where('payment_status', 'paid')
-                    ->groupBy('minggu')
-                    ->orderByDesc('minggu');
+                $query->whereBetween('created_at', [
+                    now()->startOfWeek(),
+                    now()->endOfWeek()
+                ])
+                ->where('payment_status', 'paid');
             }),
 
         'bulanan' => Tab::make('Bulanan')
             ->modifyQueryUsing(function (Builder $query) {
 
-                $query->selectRaw('
-                    DATE_FORMAT(created_at, "%Y-%m") as bulan,
-                    MIN(DATE(created_at)) as tanggal,
-                    SUM(total_harga) as total,
-                    COUNT(*) as jumlah_transaksi,
-                    MIN(id) as id
-                ')
-                    ->where('payment_status', 'paid')
-                    ->groupBy('bulan')
-                    ->orderByDesc('bulan');
+                $query->whereMonth('created_at', now()->month)
+                    ->whereYear('created_at', now()->year)
+                    ->where('payment_status', 'paid');
             }),
     ];
 }

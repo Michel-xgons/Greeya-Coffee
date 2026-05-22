@@ -7,7 +7,6 @@ use App\Models\Pesanan;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Columns\TextColumn;
 
 
@@ -32,34 +31,41 @@ class LaporanResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('tanggal')
-                    ->label('Periode')
-                    ->formatStateUsing(
-                        fn($state) =>
-                        \Carbon\Carbon::parse($state)->format('d M Y')
-                    ),
 
-                TextColumn::make('jumlah_transaksi')
-                    ->label('JumlahTransaksi')
-                    ->badge()
-                    ->color('primary'),
+                TextColumn::make('id')
+                    ->label('No')
+                    ->rowIndex(),
 
-                TextColumn::make('total')
-                    ->label('Total Pendapatan')
+                TextColumn::make('customer.name')
+                    ->label('Customer')
+                    ->searchable(),
+
+                TextColumn::make('customer.no_telpon')
+                    ->label('No Telp'),
+
+                TextColumn::make('detailPesanans')
+                    ->label('Menu')
+                    ->formatStateUsing(function ($record) {
+
+                        return $record->detailPesanans
+                            ->map(function ($item) {
+
+                                return $item->menu->nama_menu .
+                                    ' (' . $item->jumlah . ')';
+                            })->join(', ');
+                    }),
+
+                TextColumn::make('total_harga')
+                    ->label('Total')
                     ->money('IDR', true)
-                    ->weight('bold')
                     ->color('success')
-                    ->description(
-                        fn($record) =>
-                        'Pendapatan harian'
-                    ),
+                    ->weight('bold'),
+
+                TextColumn::make('created_at')
+                    ->label('Waktu')
+                    ->time('H:i'),
             ])
-            ->recordUrl(
-                fn($record) => route(
-                    'filament.admin.resources.laporans.laporan-harian',
-                    ['tanggal' => $record->tanggal]
-                )
-            )
+            
             ->defaultSort('tanggal', 'desc');
     }
 
@@ -69,7 +75,6 @@ class LaporanResource extends Resource
     {
         return [
             'index' => Pages\ListLaporans::route('/'),
-            'laporan-harian' => Pages\LaporanHarian::route('/harian/{tanggal}'),
         ];
     }
 }
