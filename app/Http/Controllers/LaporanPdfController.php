@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pesanan;
-use App\Models\Pesanans;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+
 
 class LaporanPdfController extends Controller
 {
