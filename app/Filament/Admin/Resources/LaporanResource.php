@@ -9,6 +9,7 @@ use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Columns\Summarizers\Sum;
 
 class LaporanResource extends Resource
 {
@@ -76,7 +77,13 @@ class LaporanResource extends Resource
                     ->label('Total')
                     ->money('IDR', true)
                     ->color('success')
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->summarize(
+                        Sum::make()
+                            ->money('IDR', true)
+                            ->label('Total Pendapatan')
+                    ),
+
 
                 TextColumn::make('created_at')
                     ->label('Waktu')
