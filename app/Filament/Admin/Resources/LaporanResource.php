@@ -66,7 +66,7 @@ class LaporanResource extends Resource
                     ->time('H:i'),
             ])
             
-            ->defaultSort('tanggal', 'desc');
+            ->defaultSort('created_at', 'desc');
     }
 
 
