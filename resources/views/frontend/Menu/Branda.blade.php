@@ -76,24 +76,30 @@
                                         </div>
 
                                         {{-- ================= MINUMAN ================= --}}
-                                        
-                                            <div class="d-flex align-items-center justify-content-between mb-3 mt-3">
-                                                <div class="d-flex align-items-center border rounded-pill px-2">
-                                                    <button type="button" class="btn btn-sm border-0"
-                                                        onclick="changeQty(this, -1)">−</button>
 
-                                                    <input type="number" value="1" name="qty" min="1"
-                                                        class="border-0 text-center" style="width:30px">
+                                        <div class="d-flex align-items-center justify-content-between mb-3 mt-3">
+                                            <div class="d-flex align-items-center border rounded-pill px-2">
+                                                <button type="button" class="btn btn-sm border-0"
+                                                    onclick="changeQty(this, -1)">−</button>
 
-                                                    <button type="button" class="btn btn-sm border-0"
-                                                        onclick="changeQty(this, 1)">+</button>
-                                                </div>
+                                                <input type="number" value="0" name="qty" min="0"
+                                                    class="border-0 text-center" style="width:30px">
+
+                                                <button type="button" class="btn btn-sm border-0"
+                                                    onclick="changeQty(this, 1)">+</button>
                                             </div>
+                                        </div>
 
+                                        @if ($item->stock <= 0)
+                                            <button class="btn btn-danger rounded-pill w-100 fw-semibold" disabled>
+                                                Habis
+                                            </button>
+                                        @else
                                             <a href="{{ route('detail.menu', $item->id) }}"
-                                                class="btn btn-dark rounded-pill w-100 fw-semibold go-detail">
+                                                class="btn btn-dark rounded-pill w-100 fw-semibold go-detail disabled">
                                                 Tambah
-                                            </a>                                                   
+                                            </a>
+                                        @endif
                                     </div>
                                 </div>
 
@@ -114,6 +120,13 @@
         @endforeach
     </div>
 
+    <style>
+        .go-detail.disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+    </style>
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
@@ -147,10 +160,22 @@
             let input = btn.parentElement.querySelector('input[name="qty"]');
             if (!input) return;
 
-            let val = parseInt(input.value) || 1;
-            if (change < 0 && val <= 1) return;
+            let val = parseInt(input.value) || 0;
+
+            if (change < 0 && val <= 0) return;
 
             input.value = val + change;
+
+            const card = btn.closest('.product-card');
+            const addBtn = card.querySelector('.go-detail');
+
+            if (addBtn) {
+                if (parseInt(input.value) > 0) {
+                    addBtn.classList.remove('disabled');
+                } else {
+                    addBtn.classList.add('disabled');
+                }
+            }
         }
     </script>
 
