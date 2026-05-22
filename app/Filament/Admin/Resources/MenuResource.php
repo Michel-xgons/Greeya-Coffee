@@ -19,7 +19,7 @@ use Filament\Tables\Actions\DeleteAction;
 class MenuResource extends Resource
 {
     protected static ?string $model = Menus::class;
-    
+
     protected static ?string $navigationLabel = 'Tambah Menu';
     protected static ?string $pluralModelLabel = 'Menu';
     protected static ?string $modelLabel = ' Menu';
@@ -44,6 +44,12 @@ class MenuResource extends Resource
                 TextInput::make('harga')
                     ->numeric()
                     ->required(),
+
+                TextInput::make('stock')
+                    ->numeric()
+                    ->required()
+                    ->default(0)
+                    ->minValue(0),
 
                 FileUpload::make('gambar')
                     ->image()
@@ -71,6 +77,16 @@ class MenuResource extends Resource
 
                 TextColumn::make('harga')
                     ->money('IDR', true),
+
+                TextColumn::make('stock')
+                    ->label('Stock'),
+
+                TextColumn::make('status')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'tersedia' => 'success',
+                        'habis' => 'danger',
+                    }),
 
                 TextColumn::make('created_at')
                     ->dateTime(),

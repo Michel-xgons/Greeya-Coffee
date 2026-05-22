@@ -7,7 +7,7 @@ use App\Models\Pembayaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+
 
 class XenditCallbackController extends Controller
 {
@@ -44,6 +44,25 @@ class XenditCallbackController extends Controller
 
                     $transaction->pesanan->payment_status = 'paid';
                     $transaction->transaction_time = now();
+
+                    foreach ($transaction->pesanan->detailPesanans as $detail) {
+
+                        $menu = $detail->menu;
+
+                        if ($menu) {
+
+                            $menu->stock -= $detail->jumlah;
+
+                            if ($menu->stock <= 0) {
+                                $menu->stock = 0;
+                                $menu->status = 'habis';
+                            } else {
+                                $menu->status = 'tersedia';
+                            }
+
+                            $menu->save();
+                        }
+                    }
                 } elseif ($status === 'EXPIRED') {
 
                     $transaction->pesanan->payment_status = 'expired';

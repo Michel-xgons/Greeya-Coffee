@@ -9,13 +9,14 @@ class Menus extends Model
     protected $table    = 'menus';
 
     protected $fillable = [
-        'kategori_id',
-        'nama_menu',
-        'harga',
-        'deskripsi',
-        'gambar',
-        'status',
-    ];
+    'kategori_id',
+    'nama_menu',
+    'harga',
+    'deskripsi',
+    'gambar',
+    'stock',
+    'status',
+];
 
     public function kategori()
     {
