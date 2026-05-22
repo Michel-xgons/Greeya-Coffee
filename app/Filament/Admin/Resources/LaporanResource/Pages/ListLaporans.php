@@ -25,7 +25,7 @@ class ListLaporans extends ListRecords
                 ->icon('heroicon-o-printer')
                 ->url(function () {
 
-                    $filter = request()->query('activeTab') ?? 'harian';
+                    $filter = $this->activeTab ?? 'harian';
 
                     return route('laporan.print', [
                         'filter' => $filter
