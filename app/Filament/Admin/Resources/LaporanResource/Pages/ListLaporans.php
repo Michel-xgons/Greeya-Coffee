@@ -33,14 +33,14 @@ class ListLaporans extends ListRecords
 {
     return [
 
-        'harian' => Tab::make('Harian')
+        'harian' => Tab::make('Hari Ini')
             ->modifyQueryUsing(function (Builder $query) {
 
                 $query->whereDate('created_at', today())
                     ->where('payment_status', 'paid');
             }),
 
-        'mingguan' => Tab::make('Mingguan')
+        'mingguan' => Tab::make('Minggu Ini')
             ->modifyQueryUsing(function (Builder $query) {
 
                 $query->whereBetween('created_at', [
@@ -50,7 +50,7 @@ class ListLaporans extends ListRecords
                 ->where('payment_status', 'paid');
             }),
 
-        'bulanan' => Tab::make('Bulanan')
+        'bulanan' => Tab::make('Bulan Ini')
             ->modifyQueryUsing(function (Builder $query) {
 
                 $query->whereMonth('created_at', now()->month)
