@@ -50,8 +50,18 @@ class LaporanResource extends Resource
                         return $record->detailPesanans
                             ->map(function ($item) {
 
-                                return $item->menu->nama_menu .
-                                    ' (' . $item->jumlah . ')';
+                                return $item->menu->nama_menu;
+                            })->join(', ');
+                    }),
+
+                TextColumn::make('jumlah_menu')
+                    ->label('Jumlah')
+                    ->formatStateUsing(function ($record) {
+
+                        return $record->detailPesanans
+                            ->map(function ($item) {
+
+                                return $item->jumlah;
                             })->join(', ');
                     }),
 
@@ -65,7 +75,7 @@ class LaporanResource extends Resource
                     ->label('Waktu')
                     ->time('H:i'),
             ])
-            
+
             ->defaultSort('created_at', 'desc');
     }
 
