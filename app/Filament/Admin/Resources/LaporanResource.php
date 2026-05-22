@@ -33,8 +33,11 @@ class LaporanResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('tanggal')
-                    ->label('Tanggal')
-                    ->date('d M Y'),
+                    ->label('Periode')
+                    ->formatStateUsing(
+                        fn($state) =>
+                        \Carbon\Carbon::parse($state)->format('d M Y')
+                    ),
 
                 TextColumn::make('jumlah_transaksi')
                     ->label('JumlahTransaksi')
@@ -60,19 +63,7 @@ class LaporanResource extends Resource
             ->defaultSort('tanggal', 'desc');
     }
 
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->selectRaw('
-            DATE(created_at) as tanggal,
-            SUM(total_harga) as total,
-            COUNT(*) as jumlah_transaksi,
-            MIN(id) as id
-        ')
-            ->where('payment_status', 'paid')
-            ->groupBy('tanggal')
-            ->orderByDesc('tanggal');
-    }
+
 
     public static function getPages(): array
     {

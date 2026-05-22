@@ -7,6 +7,8 @@ use Filament\Resources\Pages\ListRecords;
 use App\Filament\Admin\Widgets\StatistikPendapatan;
 use App\Filament\Admin\Widgets\GrafikPenjualan;
 use App\Filament\Admin\Widgets\MenuTerlaris;
+use Filament\Resources\Components\Tab;
+use Illuminate\Database\Eloquent\Builder;
 
 class ListLaporans extends ListRecords
 {
@@ -26,4 +28,56 @@ class ListLaporans extends ListRecords
             MenuTerlaris::class,
         ];
     }
+
+    public function getTabs(): array
+{
+    return [
+
+        'harian' => Tab::make('Harian')
+            ->modifyQueryUsing(function (Builder $query) {
+
+                $query->selectRaw('
+                    DATE(created_at) as tanggal,
+                    SUM(total_harga) as total,
+                    COUNT(*) as jumlah_transaksi,
+                    MIN(id) as id
+                ')
+                    ->where('payment_status', 'paid')
+                    ->groupBy('tanggal')
+                    ->orderByDesc('tanggal');
+            }),
+
+        'mingguan' => Tab::make('Mingguan')
+            ->modifyQueryUsing(function (Builder $query) {
+
+                $query->selectRaw('
+                    YEARWEEK(created_at, 1) as minggu,
+                    MIN(DATE(created_at)) as tanggal,
+                    SUM(total_harga) as total,
+                    COUNT(*) as jumlah_transaksi,
+                    MIN(id) as id
+                ')
+                    ->where('payment_status', 'paid')
+                    ->groupBy('minggu')
+                    ->orderByDesc('minggu');
+            }),
+
+        'bulanan' => Tab::make('Bulanan')
+            ->modifyQueryUsing(function (Builder $query) {
+
+                $query->selectRaw('
+                    DATE_FORMAT(created_at, "%Y-%m") as bulan,
+                    MIN(DATE(created_at)) as tanggal,
+                    SUM(total_harga) as total,
+                    COUNT(*) as jumlah_transaksi,
+                    MIN(id) as id
+                ')
+                    ->where('payment_status', 'paid')
+                    ->groupBy('bulan')
+                    ->orderByDesc('bulan');
+            }),
+    ];
 }
+}
+
+
