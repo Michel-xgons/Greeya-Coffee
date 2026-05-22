@@ -8,7 +8,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
-use Illuminate\Database\Eloquent\Builder;   
+use Illuminate\Database\Eloquent\Builder;
 
 class LaporanResource extends Resource
 {
@@ -18,14 +18,14 @@ class LaporanResource extends Resource
     protected static ?string $navigationLabel = 'Laporan Penjualan';
 
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
-public static function getEloquentQuery(): Builder
-{
-    return parent::getEloquentQuery()
-        ->with([
-            'customer',
-            'detailPesanans.menu',
-        ]);
-}
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with([
+                'customer',
+                'detailPesanans.menu',
+            ]);
+    }
     public static function form(Form $form): Form
     {
         return $form
@@ -61,15 +61,15 @@ public static function getEloquentQuery(): Builder
                             })->join(', ');
                     }),
 
-                TextColumn::make('jumlah')
+                TextColumn::make('detailPesanans.jumlah')
                     ->label('Jumlah')
-                    ->formatStateUsing(function ($record) {
+                    ->formatStateUsing(function ($state) {
 
-                        return $record->detailPesanans
-                            ->map(function ($item) {
+                        if (is_array($state)) {
+                            return implode(', ', $state);
+                        }
 
-                                return $item->jumlah;
-                            })->join(', ');
+                        return $state;
                     }),
 
                 TextColumn::make('total_harga')
