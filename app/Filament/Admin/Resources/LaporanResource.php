@@ -54,7 +54,7 @@ class LaporanResource extends Resource
                             })->join(', ');
                     }),
 
-                TextColumn::make('jumlah_menu')
+                TextColumn::make('jumlah')
                     ->label('Jumlah')
                     ->formatStateUsing(function ($record) {
 
