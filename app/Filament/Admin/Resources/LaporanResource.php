@@ -8,7 +8,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
-
+use Illuminate\Database\Eloquent\Builder;   
 
 class LaporanResource extends Resource
 {
@@ -18,7 +18,14 @@ class LaporanResource extends Resource
     protected static ?string $navigationLabel = 'Laporan Penjualan';
 
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
-
+public static function getEloquentQuery(): Builder
+{
+    return parent::getEloquentQuery()
+        ->with([
+            'customer',
+            'detailPesanans.menu',
+        ]);
+}
     public static function form(Form $form): Form
     {
         return $form
