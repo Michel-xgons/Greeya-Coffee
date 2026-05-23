@@ -17,26 +17,27 @@ class ListLaporans extends ListRecords
 
     protected static ?string $title = 'Laporan Penjualan';
 
-    protected function getHeaderActions(): array
+    public function getDefaultActiveTab(): string
     {
-        return [
-
-            Action::make('print')
-                ->label('Cetak PDF')
-                ->icon('heroicon-o-printer')
-                ->action(function () {
-
-                    $tab = request()->query('activeTab', 'harian');
-
-                    return redirect()->to(
-                        route('laporan.print', [
-                            'filter' => $tab,
-                        ])
-                    );
-                }),
-
-        ];
+        return request()->query('activeTab', 'harian');
     }
+    
+    protected function getHeaderActions(): array
+{
+    $tab = request()->query('activeTab', 'harian');
+
+    return [
+
+        Action::make('print')
+            ->label('Cetak PDF')
+            ->icon('heroicon-o-printer')
+            ->url(route('laporan.print', [
+                'filter' => $tab,
+            ]))
+            ->openUrlInNewTab(),
+
+    ];
+}
 
     protected function getHeaderWidgets(): array
     {
