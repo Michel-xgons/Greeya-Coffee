@@ -10,7 +10,6 @@ use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Columns\Summarizers\Sum;
-use Filament\Tables\Actions\Action;
 
 class LaporanResource extends Resource
 {
