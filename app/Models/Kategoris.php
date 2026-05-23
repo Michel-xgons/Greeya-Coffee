@@ -9,7 +9,7 @@ class Kategoris extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['id_kategori'];
+    protected $fillable = ['nama_kategori'];
 
     public function menus()
     {
