@@ -18,6 +18,11 @@ class ListLaporans extends ListRecords
 
     public ?string $activeTab = 'harian';
 
+    public function getDefaultActiveTab(): string
+    {
+        return $this->activeTab;
+    }
+
     protected function getHeaderActions(): array
     {
         return [
@@ -49,12 +54,16 @@ class ListLaporans extends ListRecords
             'harian' => Tab::make('Hari Ini')
                 ->modifyQueryUsing(function (Builder $query) {
 
+                    $this->activeTab = 'harian';
+
                     $query->whereDate('created_at', today())
                         ->where('payment_status', 'paid');
                 }),
 
             'mingguan' => Tab::make('Minggu Ini')
                 ->modifyQueryUsing(function (Builder $query) {
+
+                    $this->activeTab = 'mingguan';
 
                     $query->whereBetween('created_at', [
                         now()->startOfWeek(),
@@ -65,6 +74,8 @@ class ListLaporans extends ListRecords
 
             'bulanan' => Tab::make('Bulan Ini')
                 ->modifyQueryUsing(function (Builder $query) {
+
+                    $this->activeTab = 'bulanan';
 
                     $query->whereMonth('created_at', now()->month)
                         ->whereYear('created_at', now()->year)
