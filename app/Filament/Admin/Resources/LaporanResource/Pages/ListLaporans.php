@@ -14,14 +14,8 @@ use Filament\Actions\Action;
 class ListLaporans extends ListRecords
 {
     protected static string $resource = LaporanResource::class;
+
     protected static ?string $title = 'Laporan Penjualan';
-
-    public ?string $activeTab = 'harian';
-
-    public function getDefaultActiveTab(): string
-    {
-        return $this->activeTab;
-    }
 
     protected function getHeaderActions(): array
     {
@@ -32,9 +26,11 @@ class ListLaporans extends ListRecords
                 ->icon('heroicon-o-printer')
                 ->url(function () {
 
-                    $tab = request()->query('activeTab');
+                    $tab = request()->get('activeTab', 'harian');
 
-                    return url('/laporan/print?filter=' . $tab);
+                    return route('laporan.print', [
+                        'filter' => $tab,
+                    ]);
                 })
                 ->openUrlInNewTab(),
 
@@ -57,8 +53,6 @@ class ListLaporans extends ListRecords
             'harian' => Tab::make('Hari Ini')
                 ->modifyQueryUsing(function (Builder $query) {
 
-                    $this->activeTab = 'harian';
-
                     $query->whereDate('created_at', today())
                         ->where('payment_status', 'paid');
                 }),
@@ -66,19 +60,15 @@ class ListLaporans extends ListRecords
             'mingguan' => Tab::make('Minggu Ini')
                 ->modifyQueryUsing(function (Builder $query) {
 
-                    $this->activeTab = 'mingguan';
-
                     $query->whereBetween('created_at', [
                         now()->startOfWeek(),
-                        now()->endOfWeek()
+                        now()->endOfWeek(),
                     ])
-                        ->where('payment_status', 'paid');
+                    ->where('payment_status', 'paid');
                 }),
 
             'bulanan' => Tab::make('Bulan Ini')
                 ->modifyQueryUsing(function (Builder $query) {
-
-                    $this->activeTab = 'bulanan';
 
                     $query->whereMonth('created_at', now()->month)
                         ->whereYear('created_at', now()->year)
