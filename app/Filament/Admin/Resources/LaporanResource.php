@@ -90,17 +90,8 @@ class LaporanResource extends Resource
                     ->label('Waktu')
                     ->time('H:i'),
             ])
-            ->headerActions([
-                Action::make('print')
-                    ->label('Cetak PDF')
-                    ->icon('heroicon-o-printer')
-                    ->url(fn() => route('laporan.print'))
-                    ->openUrlInNewTab(),
-            ])
             ->defaultSort('created_at', 'desc');
     }
-
-
 
     public static function getPages(): array
     {
