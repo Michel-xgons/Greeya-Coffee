@@ -21,18 +21,32 @@ class ListLaporans extends ListRecords
     {
         return request()->query('activeTab', 'harian');
     }
-    
+
     protected function getHeaderActions(): array
 {
-    $tab = request()->query('activeTab', 'harian');
-
     return [
 
-        Action::make('print')
-            ->label('Cetak PDF')
+        Action::make('print_harian')
+            ->label('PDF Harian')
             ->icon('heroicon-o-printer')
             ->url(route('laporan.print', [
-                'filter' => $tab,
+                'filter' => 'harian',
+            ]))
+            ->openUrlInNewTab(),
+
+        Action::make('print_mingguan')
+            ->label('PDF Mingguan')
+            ->icon('heroicon-o-printer')
+            ->url(route('laporan.print', [
+                'filter' => 'mingguan',
+            ]))
+            ->openUrlInNewTab(),
+
+        Action::make('print_bulanan')
+            ->label('PDF Bulanan')
+            ->icon('heroicon-o-printer')
+            ->url(route('laporan.print', [
+                'filter' => 'bulanan',
             ]))
             ->openUrlInNewTab(),
 
