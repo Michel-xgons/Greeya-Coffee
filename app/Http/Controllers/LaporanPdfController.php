@@ -11,6 +11,7 @@ class LaporanPdfController extends Controller
 {
     public function index(Request $request)
     {
+        dd($request->all());
         $filter = $request->filter ?? 'harian';
 
         $query = Pesanan::with([
