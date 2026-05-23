@@ -24,15 +24,15 @@ class ListLaporans extends ListRecords
             Action::make('print')
                 ->label('Cetak PDF')
                 ->icon('heroicon-o-printer')
-                ->url(function () {
+                ->url(fn() => '#')
+                ->extraAttributes([
+                    'x-on:click' => '
+            const params = new URLSearchParams(window.location.search);
+            const tab = params.get("activeTab") || "harian";
 
-                    $tab = request()->get('activeTab', 'harian');
-
-                    return route('laporan.print', [
-                        'filter' => $tab,
-                    ]);
-                })
-                ->openUrlInNewTab(),
+            window.open("/laporan/print?filter=" + tab, "_blank");
+        '
+                ]),
 
         ];
     }
@@ -64,7 +64,7 @@ class ListLaporans extends ListRecords
                         now()->startOfWeek(),
                         now()->endOfWeek(),
                     ])
-                    ->where('payment_status', 'paid');
+                        ->where('payment_status', 'paid');
                 }),
 
             'bulanan' => Tab::make('Bulan Ini')
