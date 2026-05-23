@@ -30,7 +30,7 @@
                     @csrf
 
                     <!-- VARIANT -->
-                    @if ($menu->kategori->nama_kategori === 'Minuman')
+                    @if (!in_array(strtolower($menu->kategori->nama_kategori), ['main course', 'snacks']))
                         <div class="fw-semibold mb-2">Pilih Varian</div>
 
                         <div class="form-check mb-2">
