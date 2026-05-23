@@ -16,6 +16,8 @@ class ListLaporans extends ListRecords
     protected static string $resource = LaporanResource::class;
     protected static ?string $title = 'Laporan Penjualan';
 
+    public ?string $activeTab = 'harian';
+
     protected function getHeaderActions(): array
     {
         return [
@@ -24,7 +26,7 @@ class ListLaporans extends ListRecords
                 ->label('Cetak PDF')
                 ->icon('heroicon-o-printer')
                 ->url(fn() => route('laporan.print', [
-                    'filter' => request('activeTab', 'harian'),
+                    'filter' => $this->activeTab,
                 ]))
                 ->openUrlInNewTab(),
 
