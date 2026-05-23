@@ -30,9 +30,12 @@ class ListLaporans extends ListRecords
             Action::make('print')
                 ->label('Cetak PDF')
                 ->icon('heroicon-o-printer')
-                ->url(fn() => route('laporan.print', [
-                    'filter' => $this->activeTab,
-                ]))
+                ->url(function () {
+
+                    $tab = request()->query('activeTab');
+
+                    return url('/laporan/print?filter=' . $tab);
+                })
                 ->openUrlInNewTab(),
 
         ];
